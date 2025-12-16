@@ -21,7 +21,7 @@ import { Calendar, ChevronDown, Check, Flame } from 'lucide-react';
 import { FullScreenCalendar } from '@/components/ui/FullScreenCalendar';
 import { useUserContext } from '@/contexts/UserContext';
 import { supabase } from '@/lib/supabaseClient';
-import { formatDateForDB } from '@/lib/utils';
+import { cn, formatDateForDB } from '@/lib/utils';
 
 type Tab = 'diary' | 'progress' | 'scan' | 'burn' | 'profile';
 type StatsRange = 'week' | 'month' | 'year';
@@ -56,10 +56,6 @@ export default function Home() {
       fetchDailyLogs();
     }
   }, [user, selectedDate]);
-
-  import { cn, formatDateForDB } from '@/lib/utils'; // Import helper
-
-  // ... inside Home component ...
 
   const fetchDailyLogs = async () => {
     if (!user) return;
