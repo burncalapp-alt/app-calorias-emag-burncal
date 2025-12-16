@@ -79,7 +79,7 @@ export default function Home() {
         mealsData = fetchedMeals;
       }
 
-      // Fetch Water (with graceful fallback)
+      // Fetch Water (from water_logs)
       let waterData: any[] = [];
       const { data: fetchedWater, error: waterError } = await supabase
         .from('water_logs')
