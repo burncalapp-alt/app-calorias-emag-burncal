@@ -21,6 +21,7 @@ import { Calendar, ChevronDown, Check, Flame } from 'lucide-react';
 import { FullScreenCalendar } from '@/components/ui/FullScreenCalendar';
 import { useUserContext } from '@/contexts/UserContext';
 import { supabase } from '@/lib/supabaseClient';
+import { formatDateForDB } from '@/lib/utils';
 
 type Tab = 'diary' | 'progress' | 'scan' | 'burn' | 'profile';
 type StatsRange = 'week' | 'month' | 'year';
@@ -56,12 +57,17 @@ export default function Home() {
     }
   }, [user, selectedDate]);
 
+  import { cn, formatDateForDB } from '@/lib/utils'; // Import helper
+
+  // ... inside Home component ...
+
   const fetchDailyLogs = async () => {
     if (!user) return;
 
     try {
-      // Create YYYY-MM-DD string exactly from the selected date (local time)
-      const dateString = selectedDate.toLocaleDateString('pt-BR').split('/').reverse().join('-');
+      // Robust Date String - Local Time
+      const dateString = formatDateForDB(selectedDate);
+      console.log("Fetching logs for date:", dateString); // Debug log
 
       // Fetch Meals (using explicit date column)
       let mealsData: any[] = [];
@@ -161,7 +167,7 @@ export default function Home() {
       const { error } = await supabase.from('water_logs').insert({
         user_id: user.id,
         amount: amount,
-        date: new Date().toISOString().split('T')[0], // Explicit date for persistence
+        date: formatDateForDB(new Date()), // Use consistent helper
         created_at: new Date().toISOString()
       });
 
@@ -169,7 +175,6 @@ export default function Home() {
       fetchDailyLogs(); // Refresh to ensure sync
     } catch (error) {
       console.error("Error adding water:", error);
-      // Revert optimistic update if needed, but keeping it simple for now
     }
   };
 
@@ -188,7 +193,7 @@ export default function Home() {
         carbs: meal.carbs || 0,
         fat: meal.fat || 0,
         image_url: meal.image,
-        date: new Date().toISOString().split('T')[0], // Explicit date for persistence
+        date: formatDateForDB(new Date()), // Use consistent helper
         created_at: new Date().toISOString()
       });
 
