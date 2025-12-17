@@ -80,6 +80,7 @@ export default function Home() {
 
       if (mealsError) {
         console.error("Error fetching meals:", mealsError);
+        alert(`Erro ao buscar refeições: ${mealsError.message}`);
       } else if (fetchedMeals) {
         mealsData = fetchedMeals;
       }
@@ -95,6 +96,7 @@ export default function Home() {
 
       if (waterError) {
         console.error("Error fetching water:", waterError);
+        alert(`Erro ao buscar água: ${waterError.message}`);
       } else if (fetchedWater) {
         waterData = fetchedWater;
       }
@@ -152,8 +154,9 @@ export default function Home() {
       });
       setWaterIntake(totalWater);
       setHistory(historyItems);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Critical error in fetchDailyLogs:", error);
+      alert(`Erro ao carregar dados: ${error.message}`);
     }
   };
 
@@ -202,8 +205,11 @@ export default function Home() {
 
       if (error) throw error;
       fetchDailyLogs();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding meal:", error);
+      alert(`Erro ao salvar refeição: ${error.message || 'Erro desconhecido'}`);
+      // Revert optimistic update (approximate, since we don't track macro history state locally yet)
+      setConsumedCalories(prev => Math.max(0, prev - meal.calories));
     }
   };
 
