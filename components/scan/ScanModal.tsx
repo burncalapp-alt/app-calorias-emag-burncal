@@ -1,7 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Camera, Image as ImageIcon, PenLine, X, Droplet, Check, RefreshCcw, Mic, Beef, Wheat, Flame } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
+import { useUserContext } from '@/contexts/UserContext';
+import { Camera, Image as ImageIcon, PenLine, X, Droplet, Check, RefreshCcw, Mic, Beef, Wheat, Flame, Loader2 } from 'lucide-react';
 
 interface ScanModalProps {
     isOpen: boolean;
@@ -18,6 +20,9 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
     const [description, setDescription] = React.useState('');
     const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
     const [scannedFood, setScannedFood] = React.useState<any | null>(null);
+    const [uploading, setUploading] = React.useState(false);
+    const [imageBlob, setImageBlob] = React.useState<Blob | null>(null);
+    const { user } = useUserContext();
 
     React.useEffect(() => {
         if (!isOpen) {
@@ -25,6 +30,8 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
             setDescription('');
             setPreviewUrl(null);
             setScannedFood(null);
+            setImageBlob(null);
+            setUploading(false);
         }
     }, [isOpen]);
 
@@ -70,7 +77,7 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
             if (previewUrl) {
                 imageBase64 = await new Promise((resolve) => {
                     const img = new Image();
-                    img.onload = () => {
+                    img.onload = async () => {
                         const canvas = document.createElement('canvas');
                         let width = img.width;
                         let height = img.height;
@@ -94,6 +101,12 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
 
                         // Compress to JPEG with 0.7 quality
                         const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+                        // Convert to Blob for upload
+                        const res = await fetch(dataUrl);
+                        const blob = await res.blob();
+                        setImageBlob(blob);
+
                         resolve(dataUrl.split(',')[1]); // Remove "data:image/jpeg;base64," prefix
                     };
                     img.src = previewUrl;
@@ -158,10 +171,43 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
         }
     };
 
-    const handleConfirmMeal = () => {
-        if (onMealAdd && scannedFood) {
-            onMealAdd(scannedFood);
+    const handleConfirmMeal = async () => {
+        if (!onMealAdd || !scannedFood) return;
+
+        let finalImageUrl = scannedFood.image;
+
+        if (imageBlob && user) {
+            setUploading(true);
+            try {
+                const filename = `${user.id}/${Date.now()}.jpg`;
+                const { data, error } = await supabase.storage
+                    .from('meal_photos')
+                    .upload(filename, imageBlob, {
+                        contentType: 'image/jpeg',
+                        upsert: true
+                    });
+
+                if (error) {
+                    console.error('Upload error:', error);
+                    // Continue with local URL as fallback, but warn?
+                } else if (data) {
+                    const { data: publicUrlData } = supabase.storage
+                        .from('meal_photos')
+                        .getPublicUrl(filename);
+
+                    finalImageUrl = publicUrlData.publicUrl;
+                }
+            } catch (err) {
+                console.error('Upload exception:', err);
+            } finally {
+                setUploading(false);
+            }
         }
+
+        onMealAdd({
+            ...scannedFood,
+            image: finalImageUrl
+        });
         onClose();
     };
 
@@ -348,11 +394,20 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                 {step === 'result' && (
                     <div className="p-6 pb-10 animate-in fade-in slide-in-from-bottom duration-300">
                         <button
-                            onClick={handleConfirmMeal}
-                            className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-orange-500 text-white font-bold text-lg hover:bg-orange-600 transition-all active:scale-95 shadow-lg shadow-orange-500/30"
+                            className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-orange-500 text-white font-bold text-lg hover:bg-orange-600 transition-all active:scale-95 shadow-lg shadow-orange-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={uploading}
                         >
-                            <Check size={20} />
-                            Adicionar ao diário
+                            {uploading ? (
+                                <>
+                                    <Loader2 size={20} className="animate-spin" />
+                                    Salvando...
+                                </>
+                            ) : (
+                                <>
+                                    <Check size={20} />
+                                    Adicionar ao diário
+                                </>
+                            )}
                         </button>
                     </div>
                 )}
