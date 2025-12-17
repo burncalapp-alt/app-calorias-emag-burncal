@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Flame, Timer, ChevronRight, Activity, Check, Sparkles, RefreshCw, Loader2 } from 'lucide-react';
 import { ExerciseDetailModal, Exercise } from './ExerciseDetailModal';
 import { useUserContext } from '@/contexts/UserContext';
+import { supabase } from '@/lib/supabaseClient';
 
 type WorkoutMode = 'pre-run' | 'post-run';
 
@@ -12,7 +13,7 @@ type WorkoutMode = 'pre-run' | 'post-run';
 
 
 export function DailyWorkoutSection() {
-    const { profile } = useUserContext();
+    const { profile, user } = useUserContext();
     const [mode, setMode] = useState<WorkoutMode>('pre-run');
 
     // AI Generated exercises
@@ -27,6 +28,53 @@ export function DailyWorkoutSection() {
 
     const [isGenerating, setIsGenerating] = useState(false);
     const [isAiGenerated, setIsAiGenerated] = useState(false);
+
+    // Load persisted workout on mount
+    useEffect(() => {
+        const loadPersistedWorkout = async () => {
+            if (!user?.id) return;
+
+            try {
+                const { data, error } = await supabase
+                    .from('generated_workouts')
+                    .select('data')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .single();
+
+                if (data?.data) {
+                    const { preRun, postRun } = data.data;
+
+                    if (preRun) {
+                        setAiPreRunExercises(preRun.exercises);
+                        setPreRunNutrition(preRun.nutritionTips);
+                        setPreRunStats({
+                            time: preRun.totalTime,
+                            calories: preRun.calories
+                        });
+                        setPreRunActions(preRun.actions || []);
+                    }
+
+                    if (postRun) {
+                        setAiPostRunExercises(postRun.exercises);
+                        setPostRunNutrition(postRun.nutritionTips);
+                        setPostRunStats({
+                            time: postRun.totalTime,
+                            calories: postRun.calories
+                        });
+                        setPostRunActions(postRun.actions || []);
+                    }
+
+                    setIsAiGenerated(true);
+                }
+            } catch (error) {
+                console.error('Error loading persisted workout:', error);
+            }
+        };
+
+        loadPersistedWorkout();
+    }, [user?.id]);
 
     // Track completion separately for each mode
     const [completedItems, setCompletedItems] = useState<Set<string>>(new Set());
@@ -97,6 +145,18 @@ export function DailyWorkoutSection() {
                     calories: postRunData.calories || '15 kcal'
                 });
                 setPostRunActions(postRunData.actions || []);
+            }
+
+            // Save to Supabase
+            if (preRunData.exercises && postRunData.exercises && user?.id) {
+                await supabase.from('generated_workouts').insert({
+                    user_id: user.id,
+                    data: {
+                        preRun: preRunData,
+                        postRun: postRunData,
+                        timestamp: new Date().toISOString()
+                    }
+                });
             }
 
             setIsAiGenerated(true);

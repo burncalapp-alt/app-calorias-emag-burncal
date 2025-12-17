@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import { Sparkles, Activity, CheckCircle2, Flame, Upload, X, ArrowLeft, Image as ImageIcon } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Sparkles, Activity, CheckCircle2, Flame, Upload, X, ArrowLeft, Image as ImageIcon, History, Calendar } from 'lucide-react';
 import { useUserContext } from '@/contexts/UserContext';
 import { Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
 
 interface WorkoutAnalysisData {
     stats: {
@@ -22,7 +23,7 @@ interface WorkoutAnalysisData {
 }
 
 export function AIAnalysisSection() {
-    const { profile } = useUserContext();
+    const { profile, user } = useUserContext();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // State
@@ -30,6 +31,22 @@ export function AIAnalysisSection() {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+    const [history, setHistory] = useState<any[]>([]);
+    const [showHistory, setShowHistory] = useState(false);
+
+    // Load History
+    useEffect(() => {
+        if (user?.id) {
+            supabase.from('workout_analyses')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false })
+                .then(({ data }) => {
+                    if (data) setHistory(data);
+                });
+        }
+    }, [user?.id]);
 
     // --- Image Handling Helpers ---
     const resizeImage = (file: File): Promise<string> => {
@@ -95,7 +112,27 @@ export function AIAnalysisSection() {
             });
             const data = await response.json();
             if (data.error) setError(data.error);
-            else setWorkoutAnalysis(data);
+            else {
+                setWorkoutAnalysis(data);
+                // Save to DB
+                if (user?.id) {
+                    await supabase.from('workout_analyses').insert({
+                        user_id: user.id,
+                        stats: data.stats,
+                        summary: data.summary,
+                        feedback: data.feedback,
+                        pre_run_advice: data.preRunAdvice,
+                        score: data.score
+                    });
+                    // Refresh history
+                    const { data: historyData } = await supabase
+                        .from('workout_analyses')
+                        .select('*')
+                        .eq('user_id', user.id)
+                        .order('created_at', { ascending: false });
+                    if (historyData) setHistory(historyData);
+                }
+            }
         } catch (err) {
             setError('Falha ao analisar o print do treino.');
         } finally {
@@ -226,7 +263,7 @@ export function AIAnalysisSection() {
 
     // --- Empty / Upload State ---
     return (
-        <div className="flex flex-col h-full animate-in fade-in duration-500">
+        <div className="flex flex-col h-full animate-in fade-in duration-500 pb-20">
             {/* Hero Section */}
             <div className="text-center space-y-4 mb-8 mt-6">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#581c87]/20 border border-[#581c87]/30 text-purple-300 text-sm font-semibold shadow-lg shadow-purple-900/10">
@@ -243,7 +280,7 @@ export function AIAnalysisSection() {
 
             {/* Upload Area */}
             <div
-                className="mx-2 mb-4 min-h-[280px] border-2 border-dashed border-gray-700/50 rounded-[2.5rem] bg-[#13161c] transition-all hover:border-purple-500/30 hover:bg-[#161b24] group cursor-pointer flex flex-col items-center justify-center p-6 text-center space-y-6"
+                className="mx-2 mb-8 min-h-[280px] border-2 border-dashed border-gray-700/50 rounded-[2.5rem] bg-[#13161c] transition-all hover:border-purple-500/30 hover:bg-[#161b24] group cursor-pointer flex flex-col items-center justify-center p-6 text-center space-y-6"
                 onClick={() => fileInputRef.current?.click()}
             >
                 {/* Icon Circle */}
@@ -285,6 +322,55 @@ export function AIAnalysisSection() {
                     <p className="text-sm font-medium">{error}</p>
                 </div>
             )}
+
+            {/* History Section */}
+            {history.length > 0 && (
+                <div className="mx-2 space-y-4">
+                    <div className="flex items-center gap-2 px-2">
+                        <History size={18} className="text-gray-400" />
+                        <h3 className="text-gray-300 font-semibold">Histórico de Análises</h3>
+                    </div>
+
+                    <div className="space-y-3">
+                        {history.map((item) => (
+                            <div
+                                key={item.id}
+                                onClick={() => setWorkoutAnalysis({
+                                    stats: item.stats,
+                                    summary: item.summary,
+                                    feedback: item.feedback,
+                                    preRunAdvice: item.pre_run_advice,
+                                    score: item.score
+                                })}
+                                className="bg-[#1e293b] p-4 rounded-2xl border border-gray-800 flex items-center justify-between cursor-pointer hover:bg-[#253248] transition-colors"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-400 font-bold text-xs">
+                                        {item.score || '?'}
+                                    </div>
+                                    <div>
+                                        <p className="text-white font-medium text-sm">{item.stats.distance || 'Treino'}</p>
+                                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                                            <Calendar size={12} />
+                                            {new Date(item.created_at).toLocaleDateString('pt-BR')}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-white font-bold text-sm">{item.stats.date}</p>
+                                    <ChevronRight size={16} className="text-gray-600 ml-auto" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
+}
+
+function ChevronRight({ size, className }: { size?: number, className?: string }) {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m9 18 6-6-6-6" /></svg>
+    )
 }
