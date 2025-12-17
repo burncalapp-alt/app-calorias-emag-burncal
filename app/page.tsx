@@ -34,7 +34,11 @@ export default function Home() {
   // App State
   const [isScanOpen, setIsScanOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  });
 
   // App State - Initialized with real calculated goals
   const [waterIntake, setWaterIntake] = useState(0);
@@ -163,7 +167,7 @@ export default function Home() {
       const { error } = await supabase.from('water_logs').insert({
         user_id: user.id,
         amount: amount,
-        date: formatDateForDB(new Date()), // Use consistent helper
+        date: formatDateForDB(selectedDate), // Use currently selected date
         created_at: new Date().toISOString()
       });
 
@@ -192,7 +196,7 @@ export default function Home() {
         carbs: meal.carbs || 0,
         fat: meal.fat || 0,
         image_url: meal.image,
-        date: formatDateForDB(new Date()), // Use consistent helper
+        date: formatDateForDB(selectedDate), // Use currently selected date
         created_at: new Date().toISOString()
       });
 

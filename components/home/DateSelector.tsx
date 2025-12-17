@@ -9,6 +9,7 @@ interface DateSelectorProps {
 
 export function DateSelector({ selectedDate, onDateChange }: DateSelectorProps) {
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     const days = [];
     for (let i = -3; i <= 3; i++) {
