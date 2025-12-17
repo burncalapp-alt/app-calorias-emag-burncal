@@ -169,8 +169,11 @@ export default function Home() {
 
       if (error) throw error;
       fetchDailyLogs(); // Refresh to ensure sync
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding water:", error);
+      alert(`Erro ao salvar água: ${error.message || 'Erro desconhecido'}`);
+      // Revert optimistic update on error
+      setWaterIntake(prev => Math.max(0, prev - amount));
     }
   };
 
