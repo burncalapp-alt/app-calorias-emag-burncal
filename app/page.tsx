@@ -301,11 +301,6 @@ export default function Home() {
               protein={dailyMacros.protein}
               fat={dailyMacros.fat}
             />
-
-            <CalorieChart
-              data={chartData}
-              goal={goals.dailyCalories}
-            />
           </div>
         );
 
