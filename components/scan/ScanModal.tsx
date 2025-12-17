@@ -211,27 +211,46 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                                 <button
                                     onClick={() => {
                                         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                                            const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-                                            const recognition = new SpeechRecognition();
-                                            recognition.lang = 'pt-BR';
-                                            recognition.start();
+                                            const startRecognition = () => {
+                                                const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+                                                const recognition = new SpeechRecognition();
+                                                recognition.lang = 'pt-BR';
+                                                recognition.start();
 
-                                            const btn = document.getElementById('mic-btn');
-                                            if (btn) btn.classList.add('text-orange-500', 'animate-pulse');
+                                                const btn = document.getElementById('mic-btn');
+                                                if (btn) btn.classList.add('text-orange-500', 'animate-pulse');
 
-                                            recognition.onresult = (event: any) => {
-                                                const transcript = event.results[0][0].transcript;
-                                                setDescription(prev => prev + (prev ? ' ' : '') + transcript);
-                                                if (btn) btn.classList.remove('text-orange-500', 'animate-pulse');
+                                                recognition.onresult = (event: any) => {
+                                                    const transcript = event.results[0][0].transcript;
+                                                    setDescription(prev => prev + (prev ? ' ' : '') + transcript);
+                                                    if (btn) btn.classList.remove('text-orange-500', 'animate-pulse');
+                                                };
+
+                                                recognition.onerror = (event: any) => {
+                                                    console.error("Speech Recognition Error:", event.error);
+                                                    if (btn) btn.classList.remove('text-orange-500', 'animate-pulse');
+                                                    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                                                        alert('Permissão de microfone negada. Verifique as configurações do seu navegador.');
+                                                    }
+                                                };
+
+                                                recognition.onend = () => {
+                                                    if (btn) btn.classList.remove('text-orange-500', 'animate-pulse');
+                                                };
                                             };
 
-                                            recognition.onerror = () => {
-                                                if (btn) btn.classList.remove('text-orange-500', 'animate-pulse');
-                                            };
+                                            // Request microphone access first to "wake up" the permission prompt on mobile PWAs
+                                            navigator.mediaDevices.getUserMedia({ audio: true })
+                                                .then((stream) => {
+                                                    // Stop the stream immediately, we just needed the permission/wake-up
+                                                    stream.getTracks().forEach(track => track.stop());
+                                                    startRecognition();
+                                                })
+                                                .catch((err) => {
+                                                    console.error("Microphone permission denied:", err);
+                                                    alert('Não foi possível acessar o microfone. Verifique se você deu permissão ao site.');
+                                                });
 
-                                            recognition.onend = () => {
-                                                if (btn) btn.classList.remove('text-orange-500', 'animate-pulse');
-                                            };
                                         } else {
                                             alert('Seu navegador não suporta reconhecimento de voz.');
                                         }
