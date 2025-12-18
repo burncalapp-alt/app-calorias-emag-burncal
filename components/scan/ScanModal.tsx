@@ -149,7 +149,10 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                     fiber: data.fiber || 0,
                     sodium: data.sodium || 0,
                     image: previewUrl,
-                    confidence: data.confidence
+                    confidence: data.confidence,
+                    judgmentBadge: data.judgmentBadge,
+                    mealNarrative: data.mealNarrative,
+                    caloriePhrase: data.caloriePhrase
                 });
             }
             setStep('result');
@@ -211,18 +214,40 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
         onClose();
     };
 
+    // Helper function for badge color styles
+    const getBadgeStyles = (color?: string) => {
+        switch (color) {
+            case 'green':
+                return 'bg-green-500/20 border-green-500 text-green-400';
+            case 'yellow':
+                return 'bg-yellow-500/20 border-yellow-500 text-yellow-400';
+            case 'orange':
+                return 'bg-orange-500/20 border-orange-500 text-orange-400';
+            default:
+                return 'bg-gray-500/20 border-gray-500 text-gray-400';
+        }
+    };
+
     // Full Screen Modal for describe/analyzing/result
     if (step !== 'menu') {
         return (
             <div className="fixed inset-0 z-[60] bg-[#0d0f14] flex flex-col animate-in fade-in duration-200">
-                {/* Header */}
-                <div className="p-4">
+                {/* Header with Logo and Close Button */}
+                <div className="p-4 flex items-center justify-between">
                     <button
                         onClick={onClose}
                         className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white hover:bg-gray-700 transition-colors"
                     >
                         <X size={20} />
                     </button>
+                    {/* App Logo */}
+                    <div className="w-12 h-12 rounded-xl overflow-hidden shadow-lg">
+                        <img
+                            src="/icons/icon-192.png"
+                            alt="BurnCal Logo"
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
                 </div>
 
                 {/* Content */}
@@ -337,8 +362,25 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
 
                     {/* RESULT STEP */}
                     {step === 'result' && scannedFood && (
-                        <div className="w-full max-w-md text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                            <div>
+                        <div className="w-full max-w-md text-center space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                            {/* Judgment Badge */}
+                            {scannedFood.judgmentBadge && (
+                                <div className="flex justify-center animate-in zoom-in duration-300" style={{ animationDelay: '100ms' }}>
+                                    <div className={`px-4 py-1.5 rounded-full border font-semibold text-sm ${getBadgeStyles(scannedFood.judgmentBadge.color)}`}>
+                                        {scannedFood.judgmentBadge.text}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Meal Narrative */}
+                            {scannedFood.mealNarrative && (
+                                <p className="text-sm text-gray-400 italic animate-in fade-in duration-300" style={{ animationDelay: '200ms' }}>
+                                    {scannedFood.mealNarrative}
+                                </p>
+                            )}
+
+                            {/* Food Name */}
+                            <div className="animate-in fade-in duration-300" style={{ animationDelay: '300ms' }}>
                                 <h2 className="text-2xl font-bold text-white leading-tight">{scannedFood.title}</h2>
                                 {scannedFood.confidence && (
                                     <div className="flex items-center justify-center gap-1 mt-2">
@@ -350,7 +392,8 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                                 )}
                             </div>
 
-                            <div className="space-y-1">
+                            {/* Calories */}
+                            <div className="space-y-1 animate-in fade-in duration-300" style={{ animationDelay: '400ms' }}>
                                 <p className="text-3xl font-bold text-orange-500">{scannedFood.calories} calorias</p>
                                 <p className="text-gray-400">{scannedFood.weight} g</p>
                             </div>
@@ -394,6 +437,7 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                 {step === 'result' && (
                     <div className="p-6 pb-10 animate-in fade-in slide-in-from-bottom duration-300">
                         <button
+                            onClick={handleConfirmMeal}
                             className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-orange-500 text-white font-bold text-lg hover:bg-orange-600 transition-all active:scale-95 shadow-lg shadow-orange-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={uploading}
                         >
