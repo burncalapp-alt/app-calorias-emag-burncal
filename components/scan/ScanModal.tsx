@@ -240,13 +240,16 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                     >
                         <X size={20} />
                     </button>
-                    {/* App Logo */}
-                    <div className="w-12 h-12 rounded-xl overflow-hidden shadow-lg">
-                        <img
-                            src="/icons/icon-192.png"
-                            alt="BurnCal Logo"
-                            className="w-full h-full object-cover"
-                        />
+                    {/* App Logo with Name */}
+                    <div className="flex items-center gap-2">
+                        <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg">
+                            <img
+                                src="/icons/icon-192.png"
+                                alt="BurnCal Logo"
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                        <span className="text-orange-500 font-bold text-lg">BurnCal</span>
                     </div>
                 </div>
 
@@ -362,7 +365,7 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
 
                     {/* RESULT STEP */}
                     {step === 'result' && scannedFood && (
-                        <div className="w-full max-w-md text-center space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                        <div className="w-full max-w-md text-center space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
                             {/* Judgment Badge */}
                             {scannedFood.judgmentBadge && (
                                 <div className="flex justify-center animate-in zoom-in duration-300" style={{ animationDelay: '100ms' }}>
@@ -379,9 +382,9 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                                 </p>
                             )}
 
-                            {/* Food Name */}
+                            {/* Food Name - DESTAQUE */}
                             <div className="animate-in fade-in duration-300" style={{ animationDelay: '300ms' }}>
-                                <h2 className="text-2xl font-bold text-white leading-tight">{scannedFood.title}</h2>
+                                <h2 className="text-2xl font-bold text-white leading-tight px-4">{scannedFood.title}</h2>
                                 {scannedFood.confidence && (
                                     <div className="flex items-center justify-center gap-1 mt-2">
                                         <div className="px-2 py-0.5 rounded-full bg-green-500/20 border border-green-500/30 text-green-400 text-xs font-medium flex items-center gap-1">
@@ -398,35 +401,35 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                                 <p className="text-gray-400">{scannedFood.weight} g</p>
                             </div>
 
-                            {/* Macro Cards */}
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="bg-[#1a1d24] rounded-2xl p-4 flex flex-col items-center gap-2 border border-gray-800">
-                                    <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
-                                        <Beef size={24} className="text-red-400" />
+                            {/* Macro Cards - Compactos */}
+                            <div className="grid grid-cols-2 gap-2 px-2">
+                                <div className="bg-[#1a1d24] rounded-xl p-3 flex flex-col items-center gap-1.5 border border-gray-800">
+                                    <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+                                        <Beef size={20} className="text-red-400" />
                                     </div>
-                                    <span className="text-sm text-gray-400">Proteínas</span>
-                                    <span className="text-white font-bold">{scannedFood.protein} g</span>
+                                    <span className="text-xs text-gray-400">Proteínas</span>
+                                    <span className="text-white font-bold text-sm">{scannedFood.protein} g</span>
                                 </div>
-                                <div className="bg-[#1a1d24] rounded-2xl p-4 flex flex-col items-center gap-2 border border-gray-800">
-                                    <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center">
-                                        <Wheat size={24} className="text-green-400" />
+                                <div className="bg-[#1a1d24] rounded-xl p-3 flex flex-col items-center gap-1.5 border border-gray-800">
+                                    <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
+                                        <Wheat size={20} className="text-green-400" />
                                     </div>
-                                    <span className="text-sm text-gray-400">Carboidratos</span>
-                                    <span className="text-white font-bold">{scannedFood.carbs} g</span>
+                                    <span className="text-xs text-gray-400">Carboidratos</span>
+                                    <span className="text-white font-bold text-sm">{scannedFood.carbs} g</span>
                                 </div>
-                                <div className="bg-[#1a1d24] rounded-2xl p-4 flex flex-col items-center gap-2 border border-gray-800">
-                                    <div className="w-12 h-12 rounded-full bg-orange-500/20 flex items-center justify-center">
-                                        <Flame size={24} className="text-orange-400" />
+                                <div className="bg-[#1a1d24] rounded-xl p-3 flex flex-col items-center gap-1.5 border border-gray-800">
+                                    <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
+                                        <Flame size={20} className="text-orange-400" />
                                     </div>
-                                    <span className="text-sm text-gray-400">Gorduras</span>
-                                    <span className="text-white font-bold">{scannedFood.fat} g</span>
+                                    <span className="text-xs text-gray-400">Gorduras</span>
+                                    <span className="text-white font-bold text-sm">{scannedFood.fat} g</span>
                                 </div>
-                                <div className="bg-[#1a1d24] rounded-2xl p-4 flex flex-col items-center gap-2 border border-gray-800">
-                                    <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
-                                        <Wheat size={24} className="text-green-400" />
+                                <div className="bg-[#1a1d24] rounded-xl p-3 flex flex-col items-center gap-1.5 border border-gray-800">
+                                    <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                                        <Wheat size={20} className="text-green-400" />
                                     </div>
-                                    <span className="text-sm text-gray-400">Fibras</span>
-                                    <span className="text-white font-bold">{scannedFood.fiber} g</span>
+                                    <span className="text-xs text-gray-400">Fibras</span>
+                                    <span className="text-white font-bold text-sm">{scannedFood.fiber} g</span>
                                 </div>
                             </div>
                         </div>
