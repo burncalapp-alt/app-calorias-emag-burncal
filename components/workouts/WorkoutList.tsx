@@ -39,7 +39,7 @@ export function WorkoutList() {
                 </button>
             </div>
 
-            <h3 className="text-lg font-semibold text-white mb-3 animate-fade-in" style={{ animationDelay: '100ms' }}>
+            <h3 className="text-lg font-semibold text-[var(--foreground)] mb-3 animate-fade-in" style={{ animationDelay: '100ms' }}>
                 Treinos Disponíveis
             </h3>
 
@@ -47,9 +47,8 @@ export function WorkoutList() {
             {workouts.map((workout, index) => (
                 <div
                     key={workout.id}
-                    className="flex gap-4 p-4 rounded-xl cursor-pointer card-hover animate-fade-in"
+                    className="flex gap-4 p-4 rounded-xl cursor-pointer card-hover animate-fade-in bg-[var(--card)] border border-[var(--border)]"
                     style={{
-                        backgroundColor: '#1a1d24',
                         animationDelay: `${(index + 2) * 100}ms`
                     }}
                 >
@@ -69,8 +68,8 @@ export function WorkoutList() {
 
                     {/* Content */}
                     <div className="flex-1 flex flex-col justify-center">
-                        <h4 className="text-white font-semibold mb-1">{workout.title}</h4>
-                        <div className="flex items-center gap-4 text-xs text-gray-400">
+                        <h4 className="font-semibold mb-1 text-[var(--foreground)]">{workout.title}</h4>
+                        <div className="flex items-center gap-4 text-xs text-[var(--muted)]">
                             <span className="flex items-center gap-1 transition-colors hover:text-gray-300">
                                 <Clock size={12} />
                                 {workout.duration}

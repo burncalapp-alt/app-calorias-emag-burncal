@@ -153,13 +153,13 @@ export function AIAnalysisSection() {
             <div className="flex flex-col items-center justify-center py-32 space-y-6 animate-in fade-in duration-500">
                 <div className="relative">
                     <div className="absolute inset-0 bg-purple-500/20 rounded-full animate-ping blur-xl"></div>
-                    <div className="relative w-24 h-24 rounded-full bg-[#1e293b] border border-purple-500/30 flex items-center justify-center shadow-2xl shadow-purple-900/20">
+                    <div className="relative w-24 h-24 rounded-full bg-[var(--card)] border border-purple-500/30 flex items-center justify-center shadow-2xl shadow-purple-900/20">
                         <Loader2 size={40} className="text-purple-400 animate-spin" />
                     </div>
                 </div>
                 <div className="text-center space-y-2">
-                    <h3 className="text-xl font-bold text-white">Analisando seu progresso...</h3>
-                    <p className="text-gray-400">Extraindo dados e gerando dicas</p>
+                    <h3 className="text-xl font-bold text-[var(--foreground)]">Analisando seu progresso...</h3>
+                    <p className="text-[var(--muted)]">Extraindo dados e gerando dicas</p>
                 </div>
             </div>
         );
@@ -180,7 +180,7 @@ export function AIAnalysisSection() {
 
                 <div className="space-y-6">
                     {/* Header Card */}
-                    <div className="bg-gradient-to-br from-[#1e293b] to-[#0f172a] p-6 rounded-3xl border border-gray-800 shadow-xl relative overflow-hidden">
+                    <div className="bg-[var(--card)] p-6 rounded-3xl border border-[var(--border)] shadow-xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-3 opacity-10">
                             <Activity size={120} />
                         </div>
@@ -189,13 +189,13 @@ export function AIAnalysisSection() {
                                 <Sparkles size={18} className="text-purple-400" />
                                 <span className="text-purple-400 font-medium text-sm">Análise Concluída</span>
                             </div>
-                            <h2 className="text-2xl font-bold text-white mb-6">Resumo do Treino</h2>
+                            <h2 className="text-2xl font-bold text-[var(--foreground)] mb-6">Resumo do Treino</h2>
 
                             {/* Stats Grid */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <p className="text-gray-500 text-xs uppercase tracking-wider">Distância</p>
-                                    <p className="text-xl font-bold text-white">{workoutAnalysis.stats.distance}</p>
+                                    <p className="text-[var(--muted)] text-xs uppercase tracking-wider">Distância</p>
+                                    <p className="text-xl font-bold text-[var(--foreground)]">{workoutAnalysis.stats.distance}</p>
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-gray-500 text-xs uppercase tracking-wider">Ritmo Médio</p>
@@ -246,13 +246,13 @@ export function AIAnalysisSection() {
 
                     {/* General Feedback */}
                     <div className="space-y-3">
-                        <h3 className="text-white font-bold ml-1 text-lg">Insights do Treinador</h3>
+                        <h3 className="text-[var(--foreground)] font-bold ml-1 text-lg">Insights do Treinador</h3>
                         {workoutAnalysis.feedback.map((item, i) => (
-                            <div key={i} className="flex gap-4 bg-[#1e293b] p-5 rounded-2xl border border-gray-800 shadow-sm">
+                            <div key={i} className="flex gap-4 bg-[var(--card)] p-5 rounded-2xl border border-[var(--border)] shadow-sm">
                                 <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
                                     <CheckCircle2 size={14} className="text-green-400" />
                                 </div>
-                                <p className="text-gray-300 text-sm leading-relaxed">{item}</p>
+                                <p className="text-[var(--muted)] text-sm leading-relaxed">{item}</p>
                             </div>
                         ))}
                     </div>
@@ -271,8 +271,8 @@ export function AIAnalysisSection() {
                     Análise com Inteligência Artificial
                 </div>
                 <div>
-                    <h2 className="text-3xl font-bold text-white mb-2">Otimize sua Corrida</h2>
-                    <p className="text-gray-400 text-sm mx-auto max-w-[280px]">
+                    <h2 className="text-3xl font-bold text-[var(--foreground)] mb-2">Otimize sua Corrida</h2>
+                    <p className="text-[var(--muted)] text-sm mx-auto max-w-[280px]">
                         Envie um print do Strava ou Nike Run e receba dicas personalizadas
                     </p>
                 </div>
@@ -280,26 +280,26 @@ export function AIAnalysisSection() {
 
             {/* Upload Area */}
             <div
-                className="mx-2 mb-8 min-h-[280px] border-2 border-dashed border-gray-700/50 rounded-[2.5rem] bg-[#13161c] transition-all hover:border-purple-500/30 hover:bg-[#161b24] group cursor-pointer flex flex-col items-center justify-center p-6 text-center space-y-6"
+                className="mx-2 mb-8 min-h-[280px] border-2 border-dashed border-[var(--border)] rounded-[2.5rem] bg-[var(--card)] transition-all hover:border-purple-500/30 hover:bg-[var(--card-hover)] group cursor-pointer flex flex-col items-center justify-center p-6 text-center space-y-6"
                 onClick={() => fileInputRef.current?.click()}
             >
                 {/* Icon Circle */}
-                <div className="w-24 h-24 rounded-full bg-[#1e2330] shadow-[0_0_40px_-10px_rgba(168,85,247,0.15)] flex items-center justify-center group-hover:scale-110 transition-transform duration-500 border border-gray-800 group-hover:border-purple-500/30">
+                <div className="w-24 h-24 rounded-full bg-[var(--background)] shadow-[0_0_40px_-10px_rgba(168,85,247,0.15)] flex items-center justify-center group-hover:scale-110 transition-transform duration-500 border border-[var(--border)] group-hover:border-purple-500/30">
                     <Upload size={32} className="text-purple-400" strokeWidth={2.5} />
                 </div>
 
                 <div className="space-y-3">
-                    <h3 className="text-white font-bold text-xl tracking-wide">Envie seu Print</h3>
-                    <p className="text-gray-500 text-sm max-w-[240px] mx-auto leading-relaxed">
+                    <h3 className="text-[var(--foreground)] font-bold text-xl tracking-wide">Envie seu Print</h3>
+                    <p className="text-[var(--muted)] text-sm max-w-[240px] mx-auto leading-relaxed">
                         Screenshot do Strava, Nike Run ou qualquer app de corrida
                     </p>
                 </div>
 
                 <div className="flex gap-3 pt-2">
-                    <span className="px-4 py-2 rounded-xl bg-[#1e2330] text-[10px] uppercase font-bold text-gray-400 border border-gray-800 tracking-wider">
+                    <span className="px-4 py-2 rounded-xl bg-[var(--background)] text-[10px] uppercase font-bold text-[var(--muted)] border border-[var(--border)] tracking-wider">
                         PNG, JPG
                     </span>
-                    <span className="px-4 py-2 rounded-xl bg-[#1e2330] text-[10px] uppercase font-bold text-gray-400 border border-gray-800 flex items-center gap-1.5 tracking-wider">
+                    <span className="px-4 py-2 rounded-xl bg-[var(--background)] text-[10px] uppercase font-bold text-[var(--muted)] border border-[var(--border)] flex items-center gap-1.5 tracking-wider">
                         <ImageIcon size={12} />
                         Screenshot
                     </span>
@@ -342,7 +342,7 @@ export function AIAnalysisSection() {
                                     preRunAdvice: item.pre_run_advice,
                                     score: item.score
                                 })}
-                                className="bg-[#1e293b] p-4 rounded-2xl border border-gray-800 flex items-center justify-between cursor-pointer hover:bg-[#253248] transition-colors"
+                                className="bg-[var(--card)] p-4 rounded-2xl border border-[var(--border)] flex items-center justify-between cursor-pointer hover:bg-[var(--card-hover)] transition-colors"
                             >
                                 <div className="flex items-center gap-4">
                                     <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-400 font-bold text-xs">

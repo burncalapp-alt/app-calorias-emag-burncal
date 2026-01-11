@@ -28,7 +28,8 @@ export function FastingSection() {
                     .select('*')
                     .eq('user_id', user.id)
                     .eq('status', 'active')
-                    .single();
+                    .eq('status', 'active')
+                    .maybeSingle();
 
                 if (data) {
                     // Resuming existing fast
@@ -147,7 +148,7 @@ export function FastingSection() {
         <div className="space-y-6 animate-in slide-in-from-right duration-300">
 
             {/* Timer Card */}
-            <div className="bg-[#1e293b] rounded-3xl p-8 flex flex-col items-center justify-center relative overflow-hidden min-h-[300px]">
+            <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-8 flex flex-col items-center justify-center relative overflow-hidden min-h-[300px]">
                 {/* Progress Circle Background */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
                     <div className="w-64 h-64 rounded-full border-[20px] border-green-500" />
@@ -160,10 +161,10 @@ export function FastingSection() {
                 )}
 
                 <div className="relative z-10 text-center space-y-2">
-                    <span className="text-gray-400 text-sm font-medium tracking-wider uppercase">
+                    <span className="text-[var(--muted)] text-sm font-medium tracking-wider uppercase">
                         {isActive ? 'Tempo Restante' : 'Pronto para começar?'}
                     </span>
-                    <div className="text-5xl font-bold text-white font-mono tracking-wider">
+                    <div className="text-5xl font-bold text-[var(--foreground)] font-mono tracking-wider">
                         {formatTime(timeLeft)}
                     </div>
                     <p className="text-green-500 font-medium">Protocolo {protocol}</p>
@@ -192,7 +193,7 @@ export function FastingSection() {
             {/* Protocols */}
             {!isActive && (
                 <div className="animate-in fade-in slide-in-from-bottom-4">
-                    <h3 className="text-white font-bold mb-4 flex items-center gap-2">
+                    <h3 className="text-[var(--foreground)] font-bold mb-4 flex items-center gap-2">
                         <Timer size={20} className="text-green-500" />
                         Escolha seu Protocolo
                     </h3>
@@ -208,11 +209,11 @@ export function FastingSection() {
                                 }}
                                 className={`p-4 rounded-2xl border transition-all text-left ${protocol === p
                                     ? 'bg-green-500/10 border-green-500'
-                                    : 'bg-[#1e293b] border-transparent hover:border-gray-700'
+                                    : 'bg-[var(--card)] border-[var(--border)] hover:border-gray-500'
                                     }`}
                             >
-                                <span className={`block font-bold text-lg ${protocol === p ? 'text-green-500' : 'text-white'}`}>{p}</span>
-                                <span className="text-xs text-gray-500">Jejum / Janela</span>
+                                <span className={`block font-bold text-lg ${protocol === p ? 'text-green-500' : 'text-[var(--foreground)]'}`}>{p}</span>
+                                <span className="text-xs text-[var(--muted)]">Jejum / Janela</span>
                             </button>
                         ))}
                     </div>

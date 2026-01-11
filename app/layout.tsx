@@ -34,6 +34,7 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: 'BurnCal',
   },
+  manifest: '/manifest.json',
 };
 
 import { UserProvider } from "@/contexts/UserContext";

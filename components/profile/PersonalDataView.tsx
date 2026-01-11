@@ -62,24 +62,24 @@ export function PersonalDataView({ onBack }: PersonalDataViewProps) {
     const formatGender = (g: Gender) => g === 'male' ? 'Masculino' : 'Feminino';
 
     return (
-        <div className="flex flex-col h-full bg-[#0f172a] animate-in slide-in-from-right duration-300 relative">
+        <div className="flex flex-col h-full bg-[var(--background)] animate-in slide-in-from-right duration-300 relative">
             {/* Header with Back Button */}
             <div className="pt-12 pb-6 px-6 relative flex items-center justify-center">
                 <button
                     onClick={onBack}
-                    className="absolute left-6 w-10 h-10 rounded-full bg-[#1e293b] flex items-center justify-center text-white hover:bg-[#253248] transition-colors"
+                    className="absolute left-6 w-10 h-10 rounded-full bg-[var(--card)] flex items-center justify-center text-[var(--foreground)] hover:bg-[var(--card-hover)] transition-colors"
                 >
                     <ChevronLeft size={24} />
                 </button>
-                <h1 className="text-xl font-bold text-white">Dados pessoais</h1>
+                <h1 className="text-xl font-bold text-[var(--foreground)]">Dados pessoais</h1>
             </div>
 
             <div className="flex-1 overflow-y-auto px-4 pb-24 space-y-6">
 
                 {/* Pessoal Section */}
                 <div>
-                    <h2 className="text-gray-400 font-medium mb-3 px-2">Pessoal</h2>
-                    <div className="bg-[#1e293b] rounded-3xl overflow-hidden">
+                    <h2 className="text-[var(--muted)] font-medium mb-3 px-2">Pessoal</h2>
+                    <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl overflow-hidden shadow-sm">
                         <DataItem icon={Ruler} label="Altura" value={`${profile.height} cm`} onClick={() => openEdit('height', 'Altura', 'number', ' cm')} />
                         <DataItem icon={Weight} label="Peso" value={`${profile.weight} kg`} onClick={() => openEdit('weight', 'Peso', 'number', ' kg')} />
                         <DataItem icon={User} label="Idade" value={`${profile.age} anos`} onClick={() => openEdit('age', 'Idade', 'number')} />
@@ -90,8 +90,8 @@ export function PersonalDataView({ onBack }: PersonalDataViewProps) {
 
                 {/* Macros Section (Read Only for now as they are calculated) */}
                 <div>
-                    <h2 className="text-gray-400 font-medium mb-3 px-2">Metas Calculadas (Automático)</h2>
-                    <div className="bg-[#1e293b] rounded-3xl overflow-hidden">
+                    <h2 className="text-[var(--muted)] font-medium mb-3 px-2">Metas Calculadas (Automático)</h2>
+                    <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl overflow-hidden shadow-sm">
                         <DataItem icon={Star} label="Calorias Diárias" value={`${goals.dailyCalories} kcal`} onClick={() => { }} />
                         <DataItem icon={Weight} label="Proteínas" value={`${goals.macros.protein} g`} onClick={() => { }} />
                         <DataItem icon={BarChart2} label="Carboidratos" value={`${goals.macros.carbs} g`} onClick={() => { }} />
@@ -118,13 +118,13 @@ function DataItem({ icon: Icon, label, value, onClick, last = false }: { icon: a
     return (
         <button
             onClick={onClick}
-            className={`w-full flex items-center justify-between p-4 hover:bg-[#253248] transition-colors ${!last ? 'border-b border-gray-800' : ''}`}
+            className={`w-full flex items-center justify-between p-4 hover:bg-[var(--card-hover)] transition-colors ${!last ? 'border-b border-[var(--border)]' : ''}`}
         >
             <div className="flex items-center gap-4">
                 <Icon size={20} className="text-gray-300" />
-                <span className="text-white">{label}</span>
+                <span className="text-[var(--foreground)]">{label}</span>
             </div>
-            <span className="text-white font-medium">{value}</span>
+            <span className="text-[var(--foreground)] font-medium">{value}</span>
         </button>
     );
 }
@@ -134,10 +134,10 @@ function EditModal({ initialValue, field, onSave, onClose }: { initialValue: str
 
     return (
         <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="w-full max-w-sm bg-[#1e293b] rounded-t-3xl sm:rounded-3xl p-6 space-y-6 animate-in slide-in-from-bottom duration-300">
-                <div className="flex justify-between items-center text-white">
+            <div className="w-full max-w-sm bg-[var(--card)] rounded-t-3xl sm:rounded-3xl p-6 space-y-6 animate-in slide-in-from-bottom duration-300">
+                <div className="flex justify-between items-center text-[var(--foreground)]">
                     <h3 className="text-lg font-bold">Editar {field.label}</h3>
-                    <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-full transition-colors"><X size={20} /></button>
+                    <button onClick={onClose} className="p-1 hover:bg-[var(--card-hover)] rounded-full transition-colors"><X size={20} /></button>
                 </div>
 
                 <div className="space-y-4">
@@ -160,7 +160,7 @@ function EditModal({ initialValue, field, onSave, onClose }: { initialValue: str
                                 value={value}
                                 onChange={(e) => setValue(e.target.value)}
                                 autoFocus
-                                className="w-full bg-[#0f172a] border border-gray-700 rounded-xl p-4 text-white text-lg focus:outline-none focus:border-orange-500 transition-colors"
+                                className="w-full bg-[var(--background)] border border-[var(--border)] rounded-xl p-4 text-[var(--foreground)] text-lg focus:outline-none focus:border-orange-500 transition-colors"
                             />
                             {field.suffix && <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">{field.suffix}</span>}
                         </div>

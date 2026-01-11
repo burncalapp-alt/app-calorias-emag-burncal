@@ -56,6 +56,15 @@ export function HistoryFeed({ entries }: HistoryFeedProps) {
                                 src={entry.imageUrl}
                                 alt={entry.title}
                                 className="w-full h-full object-cover rounded-xl transition-transform duration-200 hover:scale-110"
+                                onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    e.currentTarget.parentElement?.classList.add('bg-[var(--card-hover)]');
+                                    // Insert placeholder
+                                    const placeholder = document.createElement('div');
+                                    placeholder.className = "w-full h-full flex items-center justify-center";
+                                    placeholder.innerHTML = '<span class="text-2xl">🍽️</span>';
+                                    e.currentTarget.parentElement?.appendChild(placeholder);
+                                }}
                             />
                         ) : (
                             <div className="w-full h-full bg-[var(--card-hover)] flex items-center justify-center">

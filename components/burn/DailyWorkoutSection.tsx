@@ -41,7 +41,8 @@ export function DailyWorkoutSection() {
                     .eq('user_id', user.id)
                     .order('created_at', { ascending: false })
                     .limit(1)
-                    .single();
+                    .limit(1)
+                    .maybeSingle();
 
                 if (data?.data) {
                     const { preRun, postRun } = data.data;
@@ -221,12 +222,12 @@ export function DailyWorkoutSection() {
             </button>
 
             {/* Mode Toggle */}
-            <div className="flex bg-[#1e293b] p-1 rounded-2xl">
+            <div className="flex bg-[var(--card)] border border-[var(--border)] p-1 rounded-2xl shadow-sm">
                 <button
                     onClick={() => setMode('pre-run')}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-all ${mode === 'pre-run'
-                        ? 'bg-orange-500/20 text-orange-400 shadow-sm'
-                        : 'text-gray-400 hover:text-gray-200'
+                        ? 'bg-orange-500/10 text-orange-500 shadow-sm ring-1 ring-orange-500/20'
+                        : 'text-[var(--muted)] hover:text-[var(--foreground)]'
                         }`}
                 >
                     <Flame size={16} />
@@ -235,8 +236,8 @@ export function DailyWorkoutSection() {
                 <button
                     onClick={() => setMode('post-run')}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-all ${mode === 'post-run'
-                        ? 'bg-blue-500/20 text-blue-400 shadow-sm'
-                        : 'text-gray-400 hover:text-gray-200'
+                        ? 'bg-blue-500/10 text-blue-500 shadow-sm ring-1 ring-blue-500/20'
+                        : 'text-[var(--muted)] hover:text-[var(--foreground)]'
                         }`}
                 >
                     <Activity size={16} />
@@ -280,13 +281,13 @@ export function DailyWorkoutSection() {
             {/* Nutrition Tip Card */}
             {
                 (isAiGenerated && (mode === 'pre-run' ? aiPreRunExercises : aiPostRunExercises)) && (
-                    <div className="bg-gradient-to-r from-[#1e293b] to-[#0f172a] p-5 rounded-2xl border border-gray-800/50 flex items-start gap-4">
+                    <div className="bg-[var(--card)] p-5 rounded-2xl border border-[var(--border)] flex items-start gap-4 shadow-sm">
                         <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
                             <span className="text-xl">🍏</span>
                         </div>
                         <div>
-                            <h4 className="text-white font-bold text-sm mb-1">Dica de Nutrição</h4>
-                            <p className="text-gray-400 text-xs leading-relaxed">
+                            <h4 className="text-[var(--foreground)] font-bold text-sm mb-1">Dica de Nutrição</h4>
+                            <p className="text-[var(--muted)] text-xs leading-relaxed">
                                 {/* We need to store and access the specific tip from the API response. 
                                 Since potential re-renders might lose it if not stored, we should update the state structure.
                                 For now, I will assume we might need to refactor state to hold 'nutritionTip' string.
@@ -308,37 +309,37 @@ export function DailyWorkoutSection() {
                 {/* Protocol Checklist (New) */}
                 {(mode === 'pre-run' ? preRunActions : postRunActions).length > 0 && (
                     <div className="mb-8">
-                        <h3 className="text-white font-bold mb-4 flex items-center gap-2 text-lg">
+                        <h3 className="text-[var(--foreground)] font-bold mb-4 flex items-center gap-2 text-lg">
                             <span className="text-xl">{mode === 'pre-run' ? '⚡' : '🧊'}</span>
                             Protocolo do Atleta
                         </h3>
                         <div className="space-y-3">
                             {(mode === 'pre-run' ? preRunActions : postRunActions).map((action, i) => (
-                                <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-[#1e293b] border border-gray-800">
-                                    <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-lg shrink-0">
+                                <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-[var(--card)] border border-[var(--border)]">
+                                    <div className="w-8 h-8 rounded-full bg-gray-800/10 flex items-center justify-center text-lg shrink-0">
                                         {action.icon}
                                     </div>
                                     <div>
-                                        <h4 className="text-white font-medium text-sm">{action.task}</h4>
-                                        <p className="text-gray-500 text-xs mt-0.5">{action.category}</p>
+                                        <h4 className="text-[var(--foreground)] font-medium text-sm">{action.task}</h4>
+                                        <p className="text-[var(--muted)] text-xs mt-0.5">{action.category}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </div>
                 )}
-                <h3 className="text-white font-bold mb-4 flex justify-between items-center text-lg">
+                <h3 className="text-[var(--foreground)] font-bold mb-4 flex justify-between items-center text-lg">
                     <span>Lista de Exercícios</span>
-                    <span className="text-sm font-normal text-gray-400">{completedCount}/{exercises.length} Concluídos</span>
+                    <span className="text-sm font-normal text-[var(--muted)]">{completedCount}/{exercises.length} Concluídos</span>
                 </h3>
 
                 {exercises.length === 0 && !isGenerating && (
-                    <div className="text-center py-10 bg-[#1e293b]/50 rounded-2xl border border-dashed border-gray-800">
-                        <div className="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center mx-auto mb-4">
-                            <Sparkles size={24} className="text-gray-500" />
+                    <div className="text-center py-10 bg-[var(--card)] rounded-2xl border border-dashed border-[var(--border)]">
+                        <div className="w-16 h-16 rounded-full bg-[var(--background)] flex items-center justify-center mx-auto mb-4 border border-[var(--border)]">
+                            <Sparkles size={24} className="text-[var(--muted)]" />
                         </div>
-                        <h4 className="text-gray-300 font-medium mb-2">Sua rotina personalizada</h4>
-                        <p className="text-gray-500 text-sm max-w-[250px] mx-auto">
+                        <h4 className="text-[var(--foreground)] font-medium mb-2">Sua rotina personalizada</h4>
+                        <p className="text-[var(--muted)] text-sm max-w-[250px] mx-auto">
                             Toque em "Gerar Treino com IA" para criar uma sequência ideal para sua maratona.
                         </p>
                     </div>
@@ -349,8 +350,8 @@ export function DailyWorkoutSection() {
                         const done = isCompleted(i);
                         return (
                             <div key={i} className={`flex items-center gap-4 p-4 rounded-2xl border transition-all duration-300 ${done
-                                ? 'bg-[#1e293b]/50 border-gray-800 opacity-60'
-                                : 'bg-[#1e293b] border-gray-800 hover:bg-[#253248]'
+                                ? 'bg-[var(--card)] border-[var(--border)] opacity-60 grayscale'
+                                : 'bg-[var(--card)] border-[var(--border)] hover:bg-[var(--card-hover)]'
                                 }`}>
                                 {/* Checkbox Button */}
                                 <button
@@ -360,10 +361,10 @@ export function DailyWorkoutSection() {
                                     }}
                                     className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${done
                                         ? 'bg-green-500 text-white shadow-lg shadow-green-500/20 scale-110'
-                                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                                        : 'bg-[var(--background)] text-[var(--muted)] border border-[var(--border)] hover:bg-gray-200 dark:hover:bg-gray-700'
                                         }`}
                                 >
-                                    {done ? <Check size={16} strokeWidth={3} /> : <div className="w-2 h-2 rounded-full bg-gray-600" />}
+                                    {done ? <Check size={16} strokeWidth={3} /> : <div className="w-2 h-2 rounded-full bg-gray-400/50" />}
                                 </button>
 
                                 {/* Content Area - Opens Modal */}
@@ -371,19 +372,19 @@ export function DailyWorkoutSection() {
                                     className="flex-1 cursor-pointer flex items-center gap-4"
                                     onClick={() => setSelectedExerciseIndex(i)}
                                 >
-                                    <div className="w-12 h-12 rounded-xl bg-gray-800 flex items-center justify-center text-2xl">
+                                    <div className="w-12 h-12 rounded-xl bg-[var(--background)] flex items-center justify-center text-2xl border border-[var(--border)]">
                                         {ex.icon}
                                     </div>
                                     <div className="flex-1">
-                                        <h4 className={`font-bold transition-colors ${done ? 'text-gray-500 line-through' : 'text-white'}`}>
+                                        <h4 className={`font-bold transition-colors ${done ? 'text-[var(--muted)] line-through' : 'text-[var(--foreground)]'}`}>
                                             {ex.name}
                                         </h4>
-                                        <p className="text-xs text-gray-500">{ex.description}</p>
-                                        <p className={`text-xs font-semibold mt-0.5 ${done ? 'text-gray-600' : `text-${themeColor}-400`}`}>
+                                        <p className="text-xs text-[var(--muted)]">{ex.description}</p>
+                                        <p className={`text-xs font-semibold mt-0.5 ${done ? 'text-[var(--muted)]' : `text-${themeColor}-500`}`}>
                                             {ex.durationLabel}
                                         </p>
                                     </div>
-                                    <ChevronRight size={20} className="text-gray-600" />
+                                    <ChevronRight size={20} className="text-[var(--muted)]" />
                                 </div>
                             </div>
                         );

@@ -73,8 +73,8 @@ export function RunAnalysisSection() {
                     <Sparkles size={16} />
                     Análise com Inteligência Artificial
                 </div>
-                <h2 className="text-xl font-bold text-white">Otimize sua Corrida</h2>
-                <p className="text-sm text-gray-400 mt-1">
+                <h2 className="text-xl font-bold text-[var(--foreground)]">Otimize sua Corrida</h2>
+                <p className="text-sm text-[var(--muted)] mt-1">
                     Envie um print do Strava ou Nike Run e receba dicas personalizadas
                 </p>
             </div>
@@ -88,8 +88,8 @@ export function RunAnalysisSection() {
                     <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
                         <Upload size={28} className="text-purple-400" />
                     </div>
-                    <h3 className="text-white font-bold mb-2">Envie seu Print</h3>
-                    <p className="text-sm text-gray-500 mb-4">
+                    <h3 className="text-[var(--foreground)] font-bold mb-2">Envie seu Print</h3>
+                    <p className="text-sm text-[var(--muted)] mb-4">
                         Screenshot do Strava, Nike Run ou qualquer app de corrida
                     </p>
                     <div className="flex items-center justify-center gap-3">
@@ -151,35 +151,35 @@ export function RunAnalysisSection() {
 
                     {/* Stats Grid */}
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="p-4 rounded-2xl bg-[#1e293b] border border-gray-800">
-                            <div className="flex items-center gap-2 text-gray-400 text-xs mb-1">
+                        <div className="p-4 rounded-2xl bg-[var(--card)] border border-[var(--border)]">
+                            <div className="flex items-center gap-2 text-[var(--muted)] text-xs mb-1">
                                 <TrendingUp size={14} /> Pace Médio
                             </div>
-                            <p className="text-xl font-bold text-white">{analysis.pace}</p>
+                            <p className="text-xl font-bold text-[var(--foreground)]">{analysis.pace}</p>
                         </div>
-                        <div className="p-4 rounded-2xl bg-[#1e293b] border border-gray-800">
-                            <div className="flex items-center gap-2 text-gray-400 text-xs mb-1">
+                        <div className="p-4 rounded-2xl bg-[var(--card)] border border-[var(--border)]">
+                            <div className="flex items-center gap-2 text-[var(--muted)] text-xs mb-1">
                                 <MapPin size={14} /> Distância
                             </div>
-                            <p className="text-xl font-bold text-white">{analysis.distance}</p>
+                            <p className="text-xl font-bold text-[var(--foreground)]">{analysis.distance}</p>
                         </div>
-                        <div className="p-4 rounded-2xl bg-[#1e293b] border border-gray-800">
-                            <div className="flex items-center gap-2 text-gray-400 text-xs mb-1">
+                        <div className="p-4 rounded-2xl bg-[var(--card)] border border-[var(--border)]">
+                            <div className="flex items-center gap-2 text-[var(--muted)] text-xs mb-1">
                                 <Clock size={14} /> Tempo
                             </div>
-                            <p className="text-xl font-bold text-white">{analysis.time}</p>
+                            <p className="text-xl font-bold text-[var(--foreground)]">{analysis.time}</p>
                         </div>
-                        <div className="p-4 rounded-2xl bg-[#1e293b] border border-gray-800">
-                            <div className="flex items-center gap-2 text-gray-400 text-xs mb-1">
+                        <div className="p-4 rounded-2xl bg-[var(--card)] border border-[var(--border)]">
+                            <div className="flex items-center gap-2 text-[var(--muted)] text-xs mb-1">
                                 <Zap size={14} /> Calorias
                             </div>
-                            <p className="text-xl font-bold text-white">{analysis.calories}</p>
+                            <p className="text-xl font-bold text-[var(--foreground)]">{analysis.calories}</p>
                         </div>
                     </div>
 
                     {/* AI Suggestions */}
                     <div>
-                        <h3 className="text-white font-bold mb-3 flex items-center gap-2">
+                        <h3 className="text-[var(--foreground)] font-bold mb-3 flex items-center gap-2">
                             <Sparkles size={16} className="text-purple-400" />
                             Sugestões da IA
                         </h3>
@@ -194,18 +194,18 @@ export function RunAnalysisSection() {
 
                     {/* Recommended Exercises */}
                     <div>
-                        <h3 className="text-white font-bold mb-3">Treinos Recomendados</h3>
+                        <h3 className="text-[var(--foreground)] font-bold mb-3">Treinos Recomendados</h3>
                         <div className="space-y-3">
                             {analysis.exercises.map((ex, i) => (
-                                <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-[#1e293b] border border-gray-800 hover:bg-[#253248] transition-colors cursor-pointer">
+                                <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-[var(--card)] border border-[var(--border)] hover:bg-[var(--card-hover)] transition-colors cursor-pointer">
                                     <div className="w-12 h-12 rounded-xl bg-gray-800 flex items-center justify-center text-2xl">
                                         {ex.icon}
                                     </div>
                                     <div className="flex-1">
-                                        <h4 className="text-white font-bold">{ex.name}</h4>
-                                        <p className="text-sm text-gray-400">{ex.reason}</p>
+                                        <h4 className="text-[var(--foreground)] font-bold">{ex.name}</h4>
+                                        <p className="text-sm text-[var(--muted)]">{ex.reason}</p>
                                     </div>
-                                    <ChevronRight size={20} className="text-gray-600" />
+                                    <ChevronRight size={20} className="text-[var(--muted)]" />
                                 </div>
                             ))}
                         </div>

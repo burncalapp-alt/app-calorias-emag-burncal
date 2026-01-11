@@ -17,13 +17,14 @@ import { NutritionChart } from '@/components/progress/NutritionChart';
 import { CalorieChart } from '@/components/progress/CalorieChart';
 import { WeightGoalChart } from '@/components/progress/WeightGoalChart';
 import { BurnTab } from '@/components/burn/BurnTab';
-import { Calendar, ChevronDown, Check, Flame } from 'lucide-react';
+import { NutritionTab } from '@/components/nutrition/NutritionTab';
+import { Calendar, ChevronDown, Check, Flame, User, ScanLine } from 'lucide-react';
 import { FullScreenCalendar } from '@/components/ui/FullScreenCalendar';
 import { useUserContext } from '@/contexts/UserContext';
 import { supabase } from '@/lib/supabaseClient';
 import { cn, formatDateForDB } from '@/lib/utils';
 
-type Tab = 'diary' | 'progress' | 'scan' | 'burn' | 'profile';
+type Tab = 'diary' | 'progress' | 'scan' | 'burn' | 'nutrition' | 'profile';
 type StatsRange = 'week' | 'month' | 'year';
 
 export default function Home() {
@@ -54,12 +55,12 @@ export default function Home() {
   const [statsRange, setStatsRange] = useState<StatsRange>('week');
   const [isRangeSelectorOpen, setIsRangeSelectorOpen] = useState(false);
 
-  // Fetch logs when date changes or user loads
+  // Fetch logs when date changes, user loads, or tab changes (to sync data from other tabs)
   useEffect(() => {
-    if (user) {
+    if (user && activeTab === 'diary') {
       fetchDailyLogs();
     }
-  }, [user, selectedDate]);
+  }, [user, selectedDate, activeTab]);
 
   const fetchDailyLogs = async () => {
     if (!user) return;
@@ -119,7 +120,8 @@ export default function Home() {
           subtitle: `${meal.calories} kcal`,
           time: new Date(meal.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
           timestamp: new Date(meal.created_at).getTime(),
-          imageUrl: meal.image_url,
+          // Filter out ephemeral blob URLs that might have been saved during errors
+          imageUrl: meal.image_url && !meal.image_url.startsWith('blob:') ? meal.image_url : null,
           macros: {
             protein: meal.protein,
             carbs: meal.carbs,
@@ -225,11 +227,18 @@ export default function Home() {
         return (
           <div className="space-y-4">
             {/* Logo Header */}
-            <div className="flex items-center justify-center gap-2 pt-2 pb-2">
+            <div className="relative flex items-center justify-center gap-2 pt-2 pb-2">
               <Flame className="text-orange-500 fill-orange-500" size={28} />
               <span className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
                 BurnCal
               </span>
+
+              <button
+                onClick={() => setActiveTab('profile')}
+                className="absolute right-0 p-2 text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+              >
+                <User size={24} />
+              </button>
             </div>
 
             <DateSelector
@@ -238,14 +247,14 @@ export default function Home() {
             />
 
             <div
-              className="card-hover rounded-2xl p-4 animate-fade-in bg-[var(--card)] shadow-sm"
+              className="rounded-3xl p-5 animate-fade-in bg-[var(--card)] shadow-lg border border-[var(--border)]"
             >
               <CalorieRing
                 remaining={Math.max(0, goals.dailyCalories - consumedCalories)}
                 consumed={consumedCalories}
                 burned={caloriesBurned}
                 goal={goals.dailyCalories}
-                streak={1} // Static for now
+                streak={1}
               />
 
               <MacroBars
@@ -262,6 +271,15 @@ export default function Home() {
             />
 
             <HistoryFeed entries={history} />
+
+            {/* Floating Action Button for Scan */}
+            {/* Floating Action Button for Scan */}
+            <button
+              onClick={() => setIsScanOpen(true)}
+              className="fixed bottom-28 right-4 w-16 h-16 rounded-full bg-[var(--foreground)] dark:bg-[#1c1c1e] border-2 border-[var(--background)] dark:border-white/20 flex items-center justify-center shadow-xl transition-all duration-300 hover:scale-110 hover:border-orange-500/50 hover:shadow-orange-500/20 active:scale-95 z-50 group"
+            >
+              <ScanLine size={32} className="text-[var(--background)] dark:text-white group-hover:text-orange-500 transition-colors" />
+            </button>
           </div>
         );
 
@@ -307,6 +325,9 @@ export default function Home() {
       case 'burn':
         return <BurnTab />;
 
+      case 'nutrition':
+        return <NutritionTab date={selectedDate} />;
+
       case 'profile':
         return <ProfileTab />;
 
@@ -346,7 +367,6 @@ export default function Home() {
       <BottomNav
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        onScanClick={() => setIsScanOpen(true)}
       />
 
       <ScanModal

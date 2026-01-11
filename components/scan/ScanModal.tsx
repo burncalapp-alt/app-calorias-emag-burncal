@@ -192,7 +192,10 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
 
                 if (error) {
                     console.error('Upload error:', error);
-                    // Continue with local URL as fallback, but warn?
+                    if (error.message.includes('Bucket not found')) {
+                        alert('ERRO DE CONFIGURAÇÃO: O bucket de armazenamento "meal_photos" não foi encontrado no Supabase.\n\nPor favor, execute o script "create_burn_tables.sql" no Editor SQL do Supabase para corrigir isso.');
+                    }
+                    // Continue with local URL as fallback
                 } else if (data) {
                     const { data: publicUrlData } = supabase.storage
                         .from('meal_photos')
@@ -231,7 +234,7 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
     // Full Screen Modal for describe/analyzing/result
     if (step !== 'menu') {
         return (
-            <div className="fixed inset-0 z-[60] bg-[#0d0f14] flex flex-col animate-in fade-in duration-200">
+            <div className="fixed inset-0 z-[60] bg-[var(--background)] flex flex-col animate-in fade-in duration-200">
                 {/* Header with Logo and Close Button */}
                 <div className="p-4 flex items-center justify-between">
                     <button
@@ -242,45 +245,36 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                     </button>
                     {/* App Logo with Name */}
                     <div className="flex items-center gap-2">
-                        <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg">
-                            <img
-                                src="/icons/icon-192.png"
-                                alt="BurnCal Logo"
-                                className="w-full h-full object-cover"
-                            />
-                        </div>
-                        <span className="text-orange-500 font-bold text-lg">BurnCal</span>
+                        <Flame size={28} className="text-orange-500 fill-orange-500" />
+                        <span className="text-orange-600 font-bold text-lg">BurnCal</span>
                     </div>
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 flex flex-col items-center px-6 overflow-y-auto">
-                    {/* Image Preview */}
-                    <div className="relative w-40 h-40 mb-8">
-                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-orange-500/20 to-transparent"></div>
-                        {previewUrl && (
-                            <img
-                                src={previewUrl}
-                                alt="Food preview"
-                                className="w-full h-full object-cover rounded-full border-4 border-gray-800 shadow-2xl"
-                            />
-                        )}
-                        {step === 'analyzing' && (
-                            <div className="absolute inset-0 rounded-full border-4 border-orange-500 border-t-transparent animate-spin"></div>
-                        )}
-                    </div>
+
 
                     {/* DESCRIBE STEP */}
                     {step === 'describe' && (
-                        <div className="w-full max-w-md space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                            <h2 className="text-lg font-semibold text-white">Descrição do prato</h2>
+                        <div className="w-full max-w-md space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                            {previewUrl && (
+                                <div className="w-full h-40 rounded-2xl overflow-hidden shadow-md border border-[var(--border)]">
+                                    <img
+                                        src={previewUrl}
+                                        className="w-full h-full object-cover"
+                                        alt="Preview"
+                                    />
+                                </div>
+                            )}
+                            <h2 className="text-lg font-semibold text-[var(--foreground)]">Descrição do prato</h2>
 
                             <div className="relative">
                                 <textarea
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
+
                                     placeholder="Peso, composição e método de preparo ajudarão a determinar o valor nutricional..."
-                                    className="w-full h-24 p-4 pr-12 bg-transparent border-2 border-orange-500/50 rounded-xl text-white placeholder-gray-500 resize-none focus:outline-none focus:border-orange-500 transition-colors"
+                                    className="w-full h-24 p-4 pr-12 bg-transparent border-2 border-orange-500/50 rounded-xl text-[var(--foreground)] placeholder-[var(--muted)] resize-none focus:outline-none focus:border-orange-500 transition-colors"
                                 />
                                 <button
                                     onClick={() => {
@@ -339,7 +333,7 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                             <div className="flex gap-3">
                                 <button
                                     onClick={handleRetake}
-                                    className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-gray-800 text-white font-medium hover:bg-gray-700 transition-all active:scale-95"
+                                    className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-[var(--card)] text-[var(--foreground)] border font-medium hover:bg-[var(--card-hover)] transition-all active:scale-95"
                                 >
                                     <RefreshCcw size={18} />
                                     Tirar novamente
@@ -356,92 +350,145 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                     )}
 
                     {/* ANALYZING STEP */}
+                    {/* ANALYZING STEP */}
                     {step === 'analyzing' && (
-                        <div className="text-center space-y-4 animate-pulse">
-                            <p className="text-lg text-gray-300 font-medium">Analisando...</p>
-                            <p className="text-sm text-gray-500">Identificando ingredientes e calculando nutrientes</p>
+                        <div className="w-full flex-1 flex flex-col items-center justify-center space-y-8 animate-in fade-in duration-500">
+                            <div className="relative w-64 h-64">
+                                {/* Image being analyzed */}
+                                <div className="absolute inset-0 rounded-full overflow-hidden border-4 border-orange-500/20 shadow-2xl">
+                                    {previewUrl && (
+                                        <img
+                                            src={previewUrl}
+                                            className="w-full h-full object-cover"
+                                            alt="Analyzing"
+                                        />
+                                    )}
+                                    {/* Scanning Line Animation */}
+                                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-orange-500/50 to-transparent animate-[scan_2s_ease-in-out_infinite]" />
+                                </div>
+
+                                {/* Orbiting rings */}
+                                <div className="absolute inset-0 rounded-full border border-orange-500/30 animate-[spin_4s_linear_infinite]" />
+                                <div className="absolute -inset-4 rounded-full border border-dashed border-orange-500/20 animate-[spin_8s_linear_infinite_reverse]" />
+
+                                {/* AI Badge */}
+                                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-orange-500 rounded-full shadow-lg flex items-center gap-2 animate-bounce-soft">
+                                    <span className="text-xl">✨</span>
+                                    <span className="text-xs font-bold text-white uppercase tracking-wider">AI BurnCal</span>
+                                </div>
+                            </div>
+
+                            <div className="text-center space-y-3 max-w-xs mx-auto">
+                                <h3 className="text-xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent animate-pulse">
+                                    Analisando sua refeição...
+                                </h3>
+                                <p className="text-sm text-[var(--muted)]">
+                                    Nossa IA está identificando ingredientes e calculando macros.
+                                </p>
+                            </div>
                         </div>
                     )}
 
-                    {/* RESULT STEP */}
+                    {/* RESULT STEP - Influencer-Optimized Layout */}
                     {step === 'result' && scannedFood && (
-                        <div className="w-full max-w-md text-center space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                            {/* Judgment Badge */}
-                            {scannedFood.judgmentBadge && (
-                                <div className="flex justify-center animate-in zoom-in duration-300" style={{ animationDelay: '100ms' }}>
-                                    <div className={`px-4 py-1.5 rounded-full border font-semibold text-sm ${getBadgeStyles(scannedFood.judgmentBadge.color)}`}>
-                                        {scannedFood.judgmentBadge.text}
-                                    </div>
-                                </div>
-                            )}
+                        <div className="w-full flex-1 flex flex-col animate-in fade-in duration-300">
+                            {/* Hero Image Section with Overlay */}
+                            <div className="relative w-full aspect-square max-h-[32vh] overflow-hidden rounded-3xl shadow-2xl mb-3">
+                                {previewUrl && (
+                                    <img
+                                        src={previewUrl}
+                                        alt="Food preview"
+                                        className="w-full h-full object-cover"
+                                    />
+                                )}
+                                {/* Gradient Overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-                            {/* Meal Narrative */}
-                            {scannedFood.mealNarrative && (
-                                <p className="text-sm text-gray-400 italic animate-in fade-in duration-300" style={{ animationDelay: '200ms' }}>
-                                    {scannedFood.mealNarrative}
-                                </p>
-                            )}
-
-                            {/* Food Name - DESTAQUE */}
-                            <div className="animate-in fade-in duration-300" style={{ animationDelay: '300ms' }}>
-                                <h2 className="text-2xl font-bold text-white leading-tight px-4">{scannedFood.title}</h2>
-                                {scannedFood.confidence && (
-                                    <div className="flex items-center justify-center gap-1 mt-2">
-                                        <div className="px-2 py-0.5 rounded-full bg-green-500/20 border border-green-500/30 text-green-400 text-xs font-medium flex items-center gap-1">
-                                            <Check size={12} />
-                                            {Math.round(scannedFood.confidence * 100)}% de assertividade
+                                {/* Floating Badge on Image */}
+                                {scannedFood.judgmentBadge && (
+                                    <div className="absolute top-4 left-4">
+                                        <div className={`px-3 py-1.5 rounded-full border-2 font-bold text-sm backdrop-blur-sm shadow-lg ${scannedFood.judgmentBadge.color === 'green' ? 'bg-green-500/30 border-green-400 text-green-300' :
+                                            scannedFood.judgmentBadge.color === 'yellow' ? 'bg-yellow-500/30 border-yellow-400 text-yellow-300' :
+                                                'bg-orange-500/30 border-orange-400 text-orange-300'
+                                            }`}>
+                                            {scannedFood.judgmentBadge.text}
                                         </div>
                                     </div>
                                 )}
+
+                                {/* Food Name on Image Bottom */}
+                                <div className="absolute bottom-0 left-0 right-0 p-3">
+                                    <h2 className="text-xl font-black text-white drop-shadow-lg leading-tight">
+                                        {scannedFood.title}
+                                    </h2>
+                                    {scannedFood.mealNarrative && (
+                                        <p className="text-white/80 text-sm mt-1 drop-shadow">{scannedFood.mealNarrative}</p>
+                                    )}
+                                </div>
                             </div>
 
-                            {/* Calories */}
-                            <div className="space-y-1 animate-in fade-in duration-300" style={{ animationDelay: '400ms' }}>
-                                <p className="text-3xl font-bold text-orange-500">{scannedFood.calories} calorias</p>
-                                <p className="text-gray-400">{scannedFood.weight} g</p>
-                            </div>
+                            {/* Compact Info Card */}
+                            <div className="bg-[var(--card)] rounded-2xl p-3 border border-[var(--border)] shadow-lg">
+                                {/* Calories & Weight Row */}
+                                <div className="flex items-center justify-between mb-3">
+                                    <div>
+                                        <p className="text-sm text-[var(--muted)] uppercase tracking-wider font-semibold">Calorias</p>
+                                        <p className="text-4xl font-black text-orange-500">{scannedFood.calories}</p>
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-sm text-[var(--muted)] uppercase tracking-wider font-semibold">Porção</p>
+                                        <p className="text-2xl font-bold text-[var(--foreground)]">{scannedFood.weight}g</p>
+                                    </div>
+                                    {scannedFood.confidence && (
+                                        <div className="px-2 py-1 rounded-full bg-green-500/20 border border-green-500/30 text-green-600 text-xs font-bold flex items-center gap-1">
+                                            <Check size={12} />
+                                            {Math.round(scannedFood.confidence * 100)}%
+                                        </div>
+                                    )}
+                                </div>
 
-                            {/* Macro Cards - Compactos */}
-                            <div className="grid grid-cols-2 gap-2 px-2">
-                                <div className="bg-[#1a1d24] rounded-xl p-3 flex flex-col items-center gap-1.5 border border-gray-800">
-                                    <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center">
-                                        <Beef size={20} className="text-red-400" />
+                                {/* Macros Grid - 2x2 Layout */}
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3 flex flex-col items-center gap-1.5">
+                                        <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
+                                            <Beef size={24} className="text-red-500" />
+                                        </div>
+                                        <p className="text-xs text-[var(--muted)]">Proteínas</p>
+                                        <p className="font-black text-[var(--foreground)] text-lg">{scannedFood.protein} g</p>
                                     </div>
-                                    <span className="text-xs text-gray-400">Proteínas</span>
-                                    <span className="text-white font-bold text-sm">{scannedFood.protein} g</span>
-                                </div>
-                                <div className="bg-[#1a1d24] rounded-xl p-3 flex flex-col items-center gap-1.5 border border-gray-800">
-                                    <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
-                                        <Wheat size={20} className="text-green-400" />
+                                    <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3 flex flex-col items-center gap-1.5">
+                                        <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                                            <Wheat size={24} className="text-green-500" />
+                                        </div>
+                                        <p className="text-xs text-[var(--muted)]">Carboidratos</p>
+                                        <p className="font-black text-[var(--foreground)] text-lg">{scannedFood.carbs} g</p>
                                     </div>
-                                    <span className="text-xs text-gray-400">Carboidratos</span>
-                                    <span className="text-white font-bold text-sm">{scannedFood.carbs} g</span>
-                                </div>
-                                <div className="bg-[#1a1d24] rounded-xl p-3 flex flex-col items-center gap-1.5 border border-gray-800">
-                                    <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
-                                        <Flame size={20} className="text-orange-400" />
+                                    <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3 flex flex-col items-center gap-1.5">
+                                        <div className="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                                            <Flame size={24} className="text-yellow-500" />
+                                        </div>
+                                        <p className="text-xs text-[var(--muted)]">Gorduras</p>
+                                        <p className="font-black text-[var(--foreground)] text-lg">{scannedFood.fat} g</p>
                                     </div>
-                                    <span className="text-xs text-gray-400">Gorduras</span>
-                                    <span className="text-white font-bold text-sm">{scannedFood.fat} g</span>
-                                </div>
-                                <div className="bg-[#1a1d24] rounded-xl p-3 flex flex-col items-center gap-1.5 border border-gray-800">
-                                    <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                                        <Wheat size={20} className="text-green-400" />
+                                    <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3 flex flex-col items-center gap-1.5">
+                                        <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                                            <Wheat size={24} className="text-emerald-500" />
+                                        </div>
+                                        <p className="text-xs text-[var(--muted)]">Fibras</p>
+                                        <p className="font-black text-[var(--foreground)] text-lg">{scannedFood.fiber} g</p>
                                     </div>
-                                    <span className="text-xs text-gray-400">Fibras</span>
-                                    <span className="text-white font-bold text-sm">{scannedFood.fiber} g</span>
                                 </div>
                             </div>
                         </div>
                     )}
                 </div>
 
-                {/* Bottom Action */}
+                {/* Bottom Action - Sticky */}
                 {step === 'result' && (
-                    <div className="p-6 pb-10 animate-in fade-in slide-in-from-bottom duration-300">
+                    <div className="p-4 pb-8 bg-[var(--background)]">
                         <button
                             onClick={handleConfirmMeal}
-                            className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-orange-500 text-white font-bold text-lg hover:bg-orange-600 transition-all active:scale-95 shadow-lg shadow-orange-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all active:scale-[0.98] shadow-xl shadow-orange-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={uploading}
                         >
                             {uploading ? (
@@ -452,7 +499,7 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                             ) : (
                                 <>
                                     <Check size={20} />
-                                    Adicionar ao diário
+                                    Registrar Alimentação
                                 </>
                             )}
                         </button>
@@ -479,48 +526,47 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
             />
 
             <div
-                className="absolute bottom-0 left-0 right-0 rounded-t-3xl p-6 pb-10 animate-slide-up"
-                style={{ backgroundColor: '#1a1d24' }}
+                className="absolute bottom-0 left-0 right-0 rounded-t-3xl p-6 pb-10 animate-slide-up bg-[var(--card)] border-t border-[var(--border)]"
             >
                 <div className="w-10 h-1 rounded-full bg-gray-600 mx-auto mb-6" />
 
                 <div className="space-y-2 mb-6">
                     <button
                         onClick={handleCameraClick}
-                        className="w-full flex items-center gap-4 p-4 rounded-xl bg-gray-800/50 hover:bg-gray-800 transition-all active:scale-98 animate-fade-in"
+                        className="w-full flex items-center gap-4 p-4 rounded-xl bg-[var(--card-hover)] hover:opacity-80 transition-all active:scale-98 animate-fade-in border border-[var(--border)]"
                         style={{ animationDelay: '100ms' }}
                     >
-                        <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-                            <Camera size={20} className="text-blue-400" />
+                        <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                            <Camera size={20} className="text-blue-500" />
                         </div>
-                        <span className="text-white font-medium">Escanear comida</span>
+                        <span className="text-[var(--foreground)] font-medium">Escanear comida</span>
                     </button>
 
                     <button
                         onClick={handleLibraryClick}
-                        className="w-full flex items-center gap-4 p-4 rounded-xl bg-gray-800/50 hover:bg-gray-800 transition-all active:scale-98 animate-fade-in"
+                        className="w-full flex items-center gap-4 p-4 rounded-xl bg-[var(--card-hover)] hover:opacity-80 transition-all active:scale-98 animate-fade-in border border-[var(--border)]"
                         style={{ animationDelay: '200ms' }}
                     >
-                        <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                            <ImageIcon size={20} className="text-purple-400" />
+                        <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
+                            <ImageIcon size={20} className="text-purple-500" />
                         </div>
-                        <span className="text-white font-medium">Escolher da biblioteca</span>
+                        <span className="text-[var(--foreground)] font-medium">Escolher da biblioteca</span>
                     </button>
 
                     <button
                         onClick={() => setStep('describe')}
-                        className="w-full flex items-center gap-4 p-4 rounded-xl bg-gray-800/50 hover:bg-gray-800 transition-all active:scale-98 animate-fade-in"
+                        className="w-full flex items-center gap-4 p-4 rounded-xl bg-[var(--card-hover)] hover:opacity-80 transition-all active:scale-98 animate-fade-in border border-[var(--border)]"
                         style={{ animationDelay: '300ms' }}
                     >
-                        <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
-                            <PenLine size={20} className="text-orange-400" />
+                        <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
+                            <PenLine size={20} className="text-orange-500" />
                         </div>
-                        <span className="text-white font-medium">Descrever comida</span>
+                        <span className="text-[var(--foreground)] font-medium">Descrever comida</span>
                     </button>
                 </div>
 
                 <div className="mt-4 animate-fade-in" style={{ animationDelay: '400ms' }}>
-                    <h4 className="text-sm text-gray-400 mb-3">Ingestão de água</h4>
+                    <h4 className="text-sm text-[var(--muted)] mb-3">Ingestão de água</h4>
                     <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                         {waterOptions.map((amount) => (
                             <button

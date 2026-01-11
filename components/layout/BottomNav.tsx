@@ -1,23 +1,16 @@
 'use client';
 
 import React from 'react';
-import { BookOpen, BarChart2, Plus, Flame, User } from 'lucide-react';
+import { BookOpen, BarChart2, Plus, Flame, Utensils } from 'lucide-react';
 
-type Tab = 'diary' | 'progress' | 'scan' | 'burn' | 'profile';
+type Tab = 'diary' | 'progress' | 'scan' | 'burn' | 'nutrition' | 'profile';
 
-interface BottomNavProps {
-  activeTab: Tab;
-  setActiveTab: (tab: Tab) => void;
-  onScanClick: () => void;
-}
-
-export function BottomNav({ activeTab, setActiveTab, onScanClick }: BottomNavProps) {
+export function BottomNav({ activeTab, setActiveTab }: { activeTab: Tab; setActiveTab: (tab: Tab) => void }) {
   const navItems = [
     { id: 'diary', icon: BookOpen, label: 'Diário' },
     { id: 'progress', icon: BarChart2, label: 'Progresso' },
-    { id: 'scan', icon: Plus, label: '', isSpecial: true },
+    { id: 'nutrition', icon: Utensils, label: 'Nutrição' },
     { id: 'burn', icon: Flame, label: 'Queimar' },
-    { id: 'profile', icon: User, label: 'Perfil' },
   ];
 
   return (
@@ -27,30 +20,13 @@ export function BottomNav({ activeTab, setActiveTab, onScanClick }: BottomNavPro
           const isActive = activeTab === item.id;
           const Icon = item.icon;
 
-          if (item.id === 'scan') {
-            return (
-              <button
-                key={item.id}
-                onClick={onScanClick}
-                className="relative -top-4 w-14 h-14 rounded-full flex items-center justify-center shadow-lg 
-                  transition-all duration-200 ease-out
-                  hover:scale-110 hover:shadow-[0_0_25px_rgba(249,115,22,0.5)]
-                  active:scale-95 active:shadow-[0_0_10px_rgba(249,115,22,0.3)]
-                  pulse-glow"
-                style={{ backgroundColor: '#f97316' }}
-              >
-                <Icon size={28} className="text-white transition-transform duration-200" strokeWidth={2.5} />
-              </button>
-            );
-          }
-
           return (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id as Tab)}
               className={`flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-xl
                 transition-all duration-200 ease-out
-                hover:bg-gray-800/50 active:scale-95
+                hover:bg-[var(--card-hover)] active:scale-95
                 ${isActive ? '' : ''}`}
             >
               <div className={`transition-transform duration-200 ${isActive ? 'scale-110' : 'hover:scale-110'}`}>
