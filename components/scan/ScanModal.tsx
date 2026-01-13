@@ -58,6 +58,7 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
         if (file) {
             const url = URL.createObjectURL(file);
             setPreviewUrl(url);
+            setImageBlob(file); // Store blob immediately
             setStep('describe');
         }
     };
