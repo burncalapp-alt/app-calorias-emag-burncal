@@ -113,8 +113,9 @@ Se estiver em dúvida sobre o ingredientes específicos, assuma os mais prováve
             body: JSON.stringify({
                 model: 'gpt-4o',
                 messages,
-                max_tokens: 500,
-                temperature: 0.3
+                max_tokens: 1000,
+                temperature: 0.3,
+                response_format: { type: "json_object" }
             })
         });
 
