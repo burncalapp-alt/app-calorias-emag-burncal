@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 
+// Configuração do Next.js
 const nextConfig: NextConfig = {
   async headers() {
     if (process.env.NODE_ENV === 'development') return [];
