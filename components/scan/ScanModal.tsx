@@ -81,6 +81,9 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                     const file = fileInput?.files?.[0];
 
                     if (file) {
+                        // Store the file blob for Supabase upload
+                        setImageBlob(file);
+
                         // Use FileReader for reliable base64 conversion
                         imageBase64 = await new Promise<string>((resolve, reject) => {
                             const reader = new FileReader();
