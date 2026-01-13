@@ -91,8 +91,8 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                                 let width = img.width;
                                 let height = img.height;
 
-                                // Resize to max 800px dimension
-                                const maxDim = 800;
+                                // Resize to max 1200px dimension
+                                const maxDim = 1200;
                                 if (width > maxDim || height > maxDim) {
                                     if (width > height) {
                                         height = (height * maxDim) / width;
@@ -108,8 +108,8 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                                 const ctx = canvas.getContext('2d');
                                 ctx?.drawImage(img, 0, 0, width, height);
 
-                                // Compress to JPEG with 0.7 quality
-                                const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                                // Compress to JPEG with 0.9 quality
+                                const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
 
                                 // Convert to Blob for upload
                                 const res = await fetch(dataUrl);
