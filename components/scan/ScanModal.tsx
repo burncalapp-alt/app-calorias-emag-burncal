@@ -76,63 +76,100 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
             let imageBase64 = '';
             if (previewUrl) {
                 try {
-                    imageBase64 = await new Promise((resolve, reject) => {
-                        const img = new Image();
+                    // Get the original file from the input element
+                    const fileInput = fileInputRef.current;
+                    const file = fileInput?.files?.[0];
 
-                        // Set a safety timeout for image loading
-                        const timer = setTimeout(() => {
-                            reject(new Error("Image load timeout"));
-                        }, 8000);
+                    if (file) {
+                        // Use FileReader for reliable base64 conversion
+                        imageBase64 = await new Promise<string>((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                                const result = reader.result as string;
+                                // Remove data URL prefix to get pure base64
+                                const base64 = result.split(',')[1];
+                                console.log('Image converted, base64 length:', base64?.length || 0);
+                                resolve(base64 || '');
+                            };
+                            reader.onerror = () => reject(new Error('FileReader failed'));
+                            reader.readAsDataURL(file);
+                        });
+                    }
 
-                        img.onload = async () => {
-                            clearTimeout(timer);
-                            try {
-                                const canvas = document.createElement('canvas');
-                                let width = img.width;
-                                let height = img.height;
+                    // Fallback: try canvas approach if FileReader didn't work
+                    if (!imageBase64 && previewUrl) {
+                        imageBase64 = await new Promise<string>((resolve, reject) => {
+                            const img = new Image();
+                            img.crossOrigin = 'anonymous';
 
-                                // Resize to max 1024px dimension
-                                const maxDim = 1024;
-                                if (width > maxDim || height > maxDim) {
-                                    if (width > height) {
-                                        height = (height * maxDim) / width;
-                                        width = maxDim;
-                                    } else {
-                                        width = (width * maxDim) / height;
-                                        height = maxDim;
+                            const timer = setTimeout(() => {
+                                reject(new Error("Image load timeout"));
+                            }, 8000);
+
+                            img.onload = () => {
+                                clearTimeout(timer);
+                                try {
+                                    const canvas = document.createElement('canvas');
+                                    const maxDim = 1024;
+                                    let width = img.width;
+                                    let height = img.height;
+
+                                    if (width > maxDim || height > maxDim) {
+                                        if (width > height) {
+                                            height = (height * maxDim) / width;
+                                            width = maxDim;
+                                        } else {
+                                            width = (width * maxDim) / height;
+                                            height = maxDim;
+                                        }
                                     }
+
+                                    canvas.width = width;
+                                    canvas.height = height;
+                                    const ctx = canvas.getContext('2d');
+                                    ctx?.drawImage(img, 0, 0, width, height);
+
+                                    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                                    const base64 = dataUrl.split(',')[1];
+                                    console.log('Canvas fallback, base64 length:', base64?.length || 0);
+                                    resolve(base64 || '');
+                                } catch (err) {
+                                    reject(err);
                                 }
+                            };
 
-                                canvas.width = width;
-                                canvas.height = height;
-                                const ctx = canvas.getContext('2d');
-                                ctx?.drawImage(img, 0, 0, width, height);
+                            img.onerror = () => {
+                                clearTimeout(timer);
+                                reject(new Error("Image load failed"));
+                            };
 
-                                // Compress to JPEG with 0.8 quality
-                                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-
-                                // Convert to Blob for upload
-                                const res = await fetch(dataUrl);
-                                const blob = await res.blob();
-                                setImageBlob(blob);
-
-                                resolve(dataUrl.split(',')[1]); // Remove "data:image/jpeg;base64," prefix
-                            } catch (err) {
-                                reject(err);
-                            }
-                        };
-
-                        img.onerror = (e) => {
-                            clearTimeout(timer);
-                            reject(new Error("Image load failed"));
-                        };
-
-                        img.src = previewUrl;
-                    });
+                            img.src = previewUrl;
+                        });
+                    }
                 } catch (imgError) {
                     console.error("Image processing failed:", imgError);
                 }
             }
+
+            // Validate image before sending
+            if (!imageBase64) {
+                console.error('No image base64 data available');
+                setScannedFood({
+                    title: 'ERRO: Falha ao processar imagem. Tente novamente.',
+                    calories: 0,
+                    weight: 100,
+                    protein: 0,
+                    carbs: 0,
+                    fat: 0,
+                    fiber: 0,
+                    sodium: 0,
+                    image: previewUrl
+                });
+                setStep('result');
+                return;
+            }
+
+            console.log('Sending to API, imageBase64 length:', imageBase64.length);
 
             // Create an abort controller for the fetch timeout
             const controller = new AbortController();
