@@ -99,6 +99,13 @@ Se não conseguir identificar o alimento, retorne:
             content: userContent
         });
 
+        console.log('=== AI FOOD ANALYSIS DEBUG ===');
+        console.log('Image included:', !!imageBase64);
+        console.log('Image size (bytes):', imageBase64?.length || 0);
+        console.log('Description:', description);
+        console.log('API Key present:', !!OPENAI_API_KEY);
+        console.log('API Key prefix:', OPENAI_API_KEY?.substring(0, 20));
+
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -112,6 +119,9 @@ Se não conseguir identificar o alimento, retorne:
                 temperature: 0.3
             })
         });
+
+        console.log('OpenAI Response Status:', response.status);
+        console.log('OpenAI Response OK:', response.ok);
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -127,6 +137,9 @@ Se não conseguir identificar o alimento, retorne:
 
         const data = await response.json();
         const content = data.choices[0]?.message?.content;
+
+        console.log('OpenAI Full Response:', JSON.stringify(data, null, 2));
+        console.log('OpenAI Content:', content);
 
         if (!content) {
             return NextResponse.json(
