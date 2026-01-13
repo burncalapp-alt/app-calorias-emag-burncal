@@ -66,7 +66,7 @@ Responda APENAS em JSON válido, sem markdown, no seguinte formato:
 
 Se a imagem não estiver perfeitamente clara, faça sua MELHOR ESTIMATIVA baseada no que é visível. NÃO retorne erro a menos que a imagem seja totalmente preta ou corrompida. Se parecer comida, analise.
 
-Se estiver em dúvida sobre o ingredientes específicos, assuma os mais prováveis para aquele tipo de prato.``
+Se estiver em dúvida sobre o ingredientes específicos, assuma os mais prováveis para aquele tipo de prato.`
             }
         ];
 
@@ -79,7 +79,7 @@ Se estiver em dúvida sobre o ingredientes específicos, assuma os mais prováve
                 image_url: {
                     url: imageBase64.startsWith('data:')
                         ? imageBase64
-                        : `data: image / jpeg; base64, ${ imageBase64 }`,
+                        : `data:image/jpeg;base64,${imageBase64}`,
                     detail: 'high'
                 }
             });
@@ -88,7 +88,7 @@ Se estiver em dúvida sobre o ingredientes específicos, assuma os mais prováve
         userContent.push({
             type: 'text',
             text: description
-                ? `Analise esta imagem de comida.Contexto adicional: ${ description }`
+                ? `Analise esta imagem de comida.Contexto adicional: ${description}`
                 : 'Analise esta imagem de comida e forneça as informações nutricionais.'
         });
 
@@ -108,7 +108,7 @@ Se estiver em dúvida sobre o ingredientes específicos, assuma os mais prováve
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${ OPENAI_API_KEY }`
+                'Authorization': `Bearer ${OPENAI_API_KEY}`
             },
             body: JSON.stringify({
                 model: 'gpt-4o',
