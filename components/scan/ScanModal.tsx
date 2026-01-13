@@ -75,43 +75,68 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
             // Convert image to base64 with resizing
             let imageBase64 = '';
             if (previewUrl) {
-                imageBase64 = await new Promise((resolve) => {
-                    const img = new Image();
-                    img.onload = async () => {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
+                try {
+                    imageBase64 = await new Promise((resolve, reject) => {
+                        const img = new Image();
 
-                        // Resize to max 800px dimension
-                        const maxDim = 800;
-                        if (width > maxDim || height > maxDim) {
-                            if (width > height) {
-                                height = (height * maxDim) / width;
-                                width = maxDim;
-                            } else {
-                                width = (width * maxDim) / height;
-                                height = maxDim;
+                        // Set a safety timeout for image loading
+                        const timer = setTimeout(() => {
+                            reject(new Error("Image load timeout"));
+                        }, 8000);
+
+                        img.onload = async () => {
+                            clearTimeout(timer);
+                            try {
+                                const canvas = document.createElement('canvas');
+                                let width = img.width;
+                                let height = img.height;
+
+                                // Resize to max 800px dimension
+                                const maxDim = 800;
+                                if (width > maxDim || height > maxDim) {
+                                    if (width > height) {
+                                        height = (height * maxDim) / width;
+                                        width = maxDim;
+                                    } else {
+                                        width = (width * maxDim) / height;
+                                        height = maxDim;
+                                    }
+                                }
+
+                                canvas.width = width;
+                                canvas.height = height;
+                                const ctx = canvas.getContext('2d');
+                                ctx?.drawImage(img, 0, 0, width, height);
+
+                                // Compress to JPEG with 0.7 quality
+                                const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+                                // Convert to Blob for upload
+                                const res = await fetch(dataUrl);
+                                const blob = await res.blob();
+                                setImageBlob(blob);
+
+                                resolve(dataUrl.split(',')[1]); // Remove "data:image/jpeg;base64," prefix
+                            } catch (err) {
+                                reject(err);
                             }
-                        }
+                        };
 
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx?.drawImage(img, 0, 0, width, height);
+                        img.onerror = (e) => {
+                            clearTimeout(timer);
+                            reject(new Error("Image load failed"));
+                        };
 
-                        // Compress to JPEG with 0.7 quality
-                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-
-                        // Convert to Blob for upload
-                        const res = await fetch(dataUrl);
-                        const blob = await res.blob();
-                        setImageBlob(blob);
-
-                        resolve(dataUrl.split(',')[1]); // Remove "data:image/jpeg;base64," prefix
-                    };
-                    img.src = previewUrl;
-                });
+                        img.src = previewUrl;
+                    });
+                } catch (imgError) {
+                    console.error("Image processing failed:", imgError);
+                }
             }
+
+            // Create an abort controller for the fetch timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 45000); // 45s timeout
 
             const apiResponse = await fetch('/api/ai/analyze-food', {
                 method: 'POST',
@@ -119,8 +144,10 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                 body: JSON.stringify({
                     imageBase64,
                     description
-                })
+                }),
+                signal: controller.signal
             });
+            clearTimeout(timeoutId);
 
             const data = await apiResponse.json();
 
