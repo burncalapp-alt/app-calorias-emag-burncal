@@ -64,11 +64,9 @@ Responda APENAS em JSON válido, sem markdown, no seguinte formato:
   "caloriePhrase": "Sem culpa"
 }
 
-Se não conseguir identificar o alimento, retorne:
-{
-  "error": "Não foi possível identificar o alimento",
-  "confidence": 0
-}`
+Se a imagem não estiver perfeitamente clara, faça sua MELHOR ESTIMATIVA baseada no que é visível. NÃO retorne erro a menos que a imagem seja totalmente preta ou corrompida. Se parecer comida, analise.
+
+Se estiver em dúvida sobre o ingredientes específicos, assuma os mais prováveis para aquele tipo de prato.``
             }
         ];
 
@@ -81,7 +79,7 @@ Se não conseguir identificar o alimento, retorne:
                 image_url: {
                     url: imageBase64.startsWith('data:')
                         ? imageBase64
-                        : `data:image/jpeg;base64,${imageBase64}`,
+                        : `data: image / jpeg; base64, ${ imageBase64 }`,
                     detail: 'high'
                 }
             });
@@ -90,7 +88,7 @@ Se não conseguir identificar o alimento, retorne:
         userContent.push({
             type: 'text',
             text: description
-                ? `Analise esta imagem de comida. Contexto adicional: ${description}`
+                ? `Analise esta imagem de comida.Contexto adicional: ${ description }`
                 : 'Analise esta imagem de comida e forneça as informações nutricionais.'
         });
 
@@ -110,7 +108,7 @@ Se não conseguir identificar o alimento, retorne:
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${OPENAI_API_KEY}`
+                'Authorization': `Bearer ${ OPENAI_API_KEY }`
             },
             body: JSON.stringify({
                 model: 'gpt-4o',
