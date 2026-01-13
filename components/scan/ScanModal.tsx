@@ -155,7 +155,7 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                 console.error('AI Error:', data.error);
                 // Fallback to manual entry if AI fails
                 setScannedFood({
-                    title: description || 'Alimento não identificado',
+                    title: `ERRO: ${data.error}${data.details ? ' - ' + JSON.stringify(data.details).substring(0, 50) : ''}`,
                     calories: 0,
                     weight: 100,
                     protein: 0,
