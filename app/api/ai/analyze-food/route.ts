@@ -13,6 +13,13 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        if (!imageBase64) {
+            return NextResponse.json(
+                { error: 'Imagem não recebida pelo servidor. Tente tirar a foto novamente.' },
+                { status: 400 }
+            );
+        }
+
         const messages: any[] = [
             {
                 role: 'system',
