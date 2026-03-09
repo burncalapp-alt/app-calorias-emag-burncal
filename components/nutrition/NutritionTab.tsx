@@ -238,10 +238,10 @@ export function NutritionTab({ date }: NutritionTabProps) {
             if (isNowEaten) {
                 // Add to meals table
                 const { data: newMeal, error: insertError } = await supabase
-                    .from('meals')
+                    .from('food_logs')
                     .insert({
                         user_id: user.id,
-                        title: currentMeal.name,
+                        name: currentMeal.name,
                         calories: currentMeal.calories,
                         protein: currentMeal.protein,
                         carbs: currentMeal.carbs,
@@ -260,7 +260,7 @@ export function NutritionTab({ date }: NutritionTabProps) {
             } else if (logId) {
                 // Remove from meals table
                 const { error: deleteError } = await supabase
-                    .from('meals')
+                    .from('food_logs')
                     .delete()
                     .eq('id', logId);
 

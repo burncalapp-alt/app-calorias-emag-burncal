@@ -73,7 +73,7 @@ export default function Home() {
       // Fetch Meals (using explicit date column)
       let mealsData: any[] = [];
       const { data: fetchedMeals, error: mealsError } = await supabase
-        .from('meals')
+        .from('food_logs')
         .select('*')
         .eq('user_id', user.id)
         .eq('date', dateString)
@@ -116,7 +116,7 @@ export default function Home() {
         historyItems.push({
           id: meal.id,
           type: 'meal',
-          title: meal.title,
+          title: meal.name,
           subtitle: `${meal.calories} kcal`,
           time: new Date(meal.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
           timestamp: new Date(meal.created_at).getTime(),
@@ -196,13 +196,14 @@ export default function Home() {
         finalImageUrl = null;
       }
 
-      const { error } = await supabase.from('meals').insert({
+      const { error } = await supabase.from('food_logs').insert({
         user_id: user.id,
-        title: meal.title,
+        name: meal.title,
         calories: meal.calories || 0,
         protein: meal.protein || 0,
         carbs: meal.carbs || 0,
         fat: meal.fat || 0,
+        weight: meal.weight || null,
         image_url: finalImageUrl,
         date: formatDateForDB(selectedDate), // Use currently selected date
         created_at: new Date().toISOString()
