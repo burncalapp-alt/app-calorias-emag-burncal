@@ -105,7 +105,7 @@ export function WeightGoalChart({ currentWeight, startWeight, goalWeight }: Weig
                         strokeLinecap="round"
                         strokeDasharray="150"
                         strokeDashoffset={150 - (animatedProgress / 100) * 150}
-                        className="transition-all duration-[2000ms] ease-out drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]"
+                        className="transition-all duration-2000 ease-out drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]"
                     />
                 </svg>
 
@@ -122,7 +122,7 @@ export function WeightGoalChart({ currentWeight, startWeight, goalWeight }: Weig
 
                 {/* Marcador Dinâmico: Hoje/Você (Avançando pela Tela) */}
                 <div
-                    className="absolute z-20 transition-all duration-[2000ms] ease-out flex flex-col items-center"
+                    className="absolute z-20 transition-all duration-2000 ease-out flex flex-col items-center"
                     style={{
                         left: `calc(${tooltipLeftPercent}% - 32px)`, // Largura ajustada pra alinhar no visual
                         // Top descendo conforme o Y do path: ~40px no inicio ate ~90px no final

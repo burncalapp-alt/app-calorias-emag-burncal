@@ -104,7 +104,7 @@ export function BMICard({ weight, height }: BMICardProps) {
                         d="M 10 60 A 40 40 0 0 1 90 60"
                         fill="none"
                         stroke="url(#score-gradient)"
-                        className={cn("transition-all duration-[1500ms] ease-out drop-shadow-lg")}
+                        className={cn("transition-all duration-1500 ease-out drop-shadow-lg")}
                         strokeWidth="12"
                         strokeLinecap="round"
                         strokeDasharray={`${halfCircumference} ${halfCircumference}`}
@@ -123,7 +123,7 @@ export function BMICard({ weight, height }: BMICardProps) {
 
             {/* Legenda Inferior Fina (Espaçada) */}
             <div className="mt-12 flex justify-between text-[10px] font-bold text-(--muted) uppercase tracking-wider relative pt-4">
-                <div className="absolute top-0 left-0 right-0 h-[1px] bg-linear-to-r from-transparent via-(--border) to-transparent opacity-50"></div>
+                <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-(--border) to-transparent opacity-50"></div>
                 <span>Curva 15</span>
                 <span>Alerta Crítico 40+</span>
             </div>

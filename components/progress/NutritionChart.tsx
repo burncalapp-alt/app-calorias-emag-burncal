@@ -55,7 +55,7 @@ export function NutritionChart({ carbs, protein, fat }: NutritionChartProps) {
             <div className="flex flex-col md:flex-row items-center gap-8 md:gap-4 justify-between relative z-10 w-full">
 
                 {/* 1. Área do Gráfico de Anéis Circulares (Concentric Rings) */}
-                <div className="relative w-[180px] h-[180px] flex-shrink-0 animate-scale-in" style={{ animationDelay: '100ms' }}>
+                <div className="relative w-[180px] h-[180px] shrink-0 animate-scale-in" style={{ animationDelay: '100ms' }}>
                     <svg className="w-full h-full transform -rotate-90 drop-shadow-[0_10px_10px_rgba(0,0,0,0.2)]" viewBox="0 0 160 160">
                         {/* Fundos dos Anéis */}
                         <circle cx="80" cy="80" r={ringConfig.protein.r} fill="none" stroke="currentColor" strokeWidth={ringConfig.protein.stroke} className={ringConfig.protein.bg} />
@@ -66,7 +66,7 @@ export function NutritionChart({ carbs, protein, fat }: NutritionChartProps) {
                         <circle
                             cx="80" cy="80" r={ringConfig.protein.r}
                             fill="none" stroke="currentColor" strokeWidth={ringConfig.protein.stroke} strokeLinecap="round"
-                            className={ringConfig.protein.color + " transition-all duration-[1500ms] ease-out drop-shadow-lg"}
+                            className={ringConfig.protein.color + " transition-all duration-1500 ease-out drop-shadow-lg"}
                             strokeDasharray={`${getCircumference(ringConfig.protein.r)}`}
                             strokeDashoffset={`${getCircumference(ringConfig.protein.r) - (animatedValues.protein / 100) * getCircumference(ringConfig.protein.r)}`}
                         />
@@ -74,7 +74,7 @@ export function NutritionChart({ carbs, protein, fat }: NutritionChartProps) {
                         <circle
                             cx="80" cy="80" r={ringConfig.carbs.r}
                             fill="none" stroke="currentColor" strokeWidth={ringConfig.carbs.stroke} strokeLinecap="round"
-                            className={ringConfig.carbs.color + " transition-all duration-[1500ms] ease-out drop-shadow-lg"}
+                            className={ringConfig.carbs.color + " transition-all duration-1500 ease-out drop-shadow-lg"}
                             strokeDasharray={`${getCircumference(ringConfig.carbs.r)}`}
                             strokeDashoffset={`${getCircumference(ringConfig.carbs.r) - (animatedValues.carbs / 100) * getCircumference(ringConfig.carbs.r)}`}
                             style={{ transitionDelay: '100ms' }}
@@ -83,7 +83,7 @@ export function NutritionChart({ carbs, protein, fat }: NutritionChartProps) {
                         <circle
                             cx="80" cy="80" r={ringConfig.fat.r}
                             fill="none" stroke="currentColor" strokeWidth={ringConfig.fat.stroke} strokeLinecap="round"
-                            className={ringConfig.fat.color + " transition-all duration-[1500ms] ease-out drop-shadow-lg"}
+                            className={ringConfig.fat.color + " transition-all duration-1500 ease-out drop-shadow-lg"}
                             strokeDasharray={`${getCircumference(ringConfig.fat.r)}`}
                             strokeDashoffset={`${getCircumference(ringConfig.fat.r) - (animatedValues.fat / 100) * getCircumference(ringConfig.fat.r)}`}
                             style={{ transitionDelay: '200ms' }}
