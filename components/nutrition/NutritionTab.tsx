@@ -336,20 +336,20 @@ export function NutritionTab({ date }: NutritionTabProps) {
 
     // MAIN VIEW - Category Cards
     return (
-        <div className="space-y-6 pb-32 animate-in fade-in duration-700 min-h-screen bg-[var(--background)] -mx-4 px-4 pt-4">
+        <div className="space-y-6 pb-32 animate-in fade-in duration-700 min-h-screen bg-(--background) -mx-4 px-4 pt-4">
             {/* Header */}
-            <div className="relative overflow-hidden rounded-[2rem] bg-[var(--card)] border border-[var(--border)] p-6 shadow-xl">
+            <div className="relative overflow-hidden rounded-4xl bg-(--card) border border-(--border) p-6 shadow-xl">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 blur-[50px] rounded-full pointer-events-none" />
 
                 <div className="flex justify-between items-start mb-4">
                     <div className="relative z-10">
                         <span className="text-orange-500 font-bold tracking-wider text-xs uppercase mb-1 block">Meta Diária</span>
                         <div className="flex items-baseline gap-2">
-                            <h2 className="text-4xl font-bold text-[var(--foreground)]">{Math.round(goals.dailyCalories)}</h2>
-                            <span className="text-[var(--muted)] font-medium">kcal</span>
+                            <h2 className="text-4xl font-bold text-(--foreground)">{Math.round(goals.dailyCalories)}</h2>
+                            <span className="text-(--muted) font-medium">kcal</span>
                         </div>
                     </div>
-                    <button onClick={generatePlan} className="p-3 bg-[var(--muted)]/10 hover:bg-[var(--foreground)]/5 rounded-xl transition-colors text-[var(--muted)] hover:text-[var(--foreground)] relative z-10">
+                    <button onClick={generatePlan} className="p-3 bg-(--muted)/10 hover:bg-(--foreground)/5 rounded-xl transition-colors text-(--muted) hover:text-(--foreground) relative z-10">
                         <RefreshCw size={20} />
                     </button>
                 </div>
@@ -365,7 +365,7 @@ export function NutritionTab({ date }: NutritionTabProps) {
             {/* Category Cards */}
             <div className="space-y-4">
                 <div className="flex justify-between items-end px-1">
-                    <h3 className="text-lg font-bold text-[var(--foreground)]">Escolha sua Refeição</h3>
+                    <h3 className="text-lg font-bold text-(--foreground)">Escolha sua Refeição</h3>
                 </div>
 
                 {(['breakfast', 'lunch', 'snack', 'dinner'] as CategoryKey[]).map((category, idx) => {
@@ -388,11 +388,11 @@ export function NutritionTab({ date }: NutritionTabProps) {
                             }}
                             className={`w-full rounded-2xl border overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] animate-in slide-in-from-bottom-4 fill-mode-both ${hasEaten
                                 ? 'bg-green-500/10 border-green-500/30'
-                                : `bg-[var(--card)] ${info.borderColor} hover:border-orange-500/40`
+                                : `bg-(--card) ${info.borderColor} hover:border-orange-500/40`
                                 }`}
                             style={{ animationDelay: `${idx * 100}ms` }}
                         >
-                            <div className={`p-4 flex items-center gap-4 bg-gradient-to-r ${info.color}`}>
+                            <div className={`p-4 flex items-center gap-4 bg-linear-to-r ${info.color}`}>
                                 {/* Image */}
                                 <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-white/20 shrink-0 relative bg-black/5 flex items-center justify-center shadow-sm">
                                     {isGenerating ? (
@@ -413,18 +413,18 @@ export function NutritionTab({ date }: NutritionTabProps) {
 
                                 {/* Info */}
                                 <div className="flex-1 text-left">
-                                    <h4 className="font-bold text-lg text-[var(--foreground)] flex items-center gap-2">
+                                    <h4 className="font-bold text-lg text-(--foreground) flex items-center gap-2">
                                         {info.label}
                                         {hasEaten && <Check className="w-5 h-5 text-green-500" />}
                                     </h4>
-                                    <p className="text-[var(--muted)] text-sm font-medium">
+                                    <p className="text-(--muted) text-sm font-medium">
                                         {isGenerating ? 'Gerando opções...' : hasOptions ? `${progress.total} opções` : 'Toque para gerar opções'}
                                         {progress.eaten > 0 && ` • ${progress.eaten} feita`}
                                     </p>
                                 </div>
 
                                 {/* Arrow */}
-                                <div className="text-[var(--muted)]">
+                                <div className="text-(--muted)">
                                     {isGenerating ? null : <ChevronDown className="-rotate-90" />}
                                 </div>
                             </div>
