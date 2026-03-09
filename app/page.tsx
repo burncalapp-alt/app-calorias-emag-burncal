@@ -189,6 +189,13 @@ export default function Home() {
     setConsumedCalories(prev => prev + meal.calories);
 
     try {
+      // Previne que Base64 gigante ou blob temporário quebre a inserção no banco
+      let finalImageUrl = meal.image;
+      if (finalImageUrl && (finalImageUrl.startsWith('blob:') || finalImageUrl.length > 2000)) {
+        console.warn("Imagem ignorada pro BD pois é blob local ou texto b64 longo demais");
+        finalImageUrl = null;
+      }
+
       const { error } = await supabase.from('meals').insert({
         user_id: user.id,
         title: meal.title,
@@ -196,12 +203,14 @@ export default function Home() {
         protein: meal.protein || 0,
         carbs: meal.carbs || 0,
         fat: meal.fat || 0,
-        image_url: meal.image,
+        image_url: finalImageUrl,
         date: formatDateForDB(selectedDate), // Use currently selected date
         created_at: new Date().toISOString()
       });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       fetchDailyLogs();
     } catch (error: any) {
       console.error("Error adding meal:", error);

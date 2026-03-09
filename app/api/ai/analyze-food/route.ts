@@ -55,7 +55,7 @@ Crie uma frase curta e contextual, como:
 **Microfrase de Calorias (caloriePhrase):**
 Frase curta e provocativa, como "Combustível limpo", "Vale a pena", "Sem culpa".
 
-Responda APENAS em JSON válido, no seguinte formato de exemplo de dados precisos:
+Responda APENAS em JSON válido, no seguinte formato de exemplo de dados precisos (onde "confidence" deve refletir de forma realista entre 0.90 e 0.99 para fotos nítidas do prato). Exemplo:
 {
   "name": "Nome do prato",
   "weight": 242.5,
@@ -64,7 +64,7 @@ Responda APENAS em JSON válido, no seguinte formato de exemplo de dados preciso
   "carbs": 41.8,
   "fat": 16.2,
   "fiber": 4.7,
-  "confidence": 0.85,
+  "confidence": 0.96,
   "judgmentBadge": {
     "text": "Dentro do plano ✅",
     "color": "green"
@@ -121,7 +121,7 @@ Se a imagem não estiver perfeitamente clara, faça sua MELHOR estimativa precis
                 model: 'gpt-4o',
                 messages,
                 max_tokens: 1000,
-                temperature: 0.3,
+                temperature: 0.1, // Temperatura baixa para respostas mais lógicas e matemáticas garantindo constância
                 response_format: { type: "json_object" }
             })
         });
