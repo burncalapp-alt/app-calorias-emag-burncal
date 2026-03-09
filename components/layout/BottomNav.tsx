@@ -3,18 +3,18 @@
 import React from 'react';
 import { BookOpen, BarChart2, Plus, Flame, Utensils } from 'lucide-react';
 
-type Tab = 'diary' | 'progress' | 'scan' | 'burn' | 'nutrition' | 'profile';
+type Tab = 'diary' | 'progress' | 'scan' | 'fasting' | 'nutrition' | 'profile';
 
 export function BottomNav({ activeTab, setActiveTab }: { activeTab: Tab; setActiveTab: (tab: Tab) => void }) {
   const navItems = [
     { id: 'diary', icon: BookOpen, label: 'Diário' },
     { id: 'progress', icon: BarChart2, label: 'Progresso' },
     { id: 'nutrition', icon: Utensils, label: 'Nutrição' },
-    { id: 'burn', icon: Flame, label: 'Queimar' },
+    { id: 'fasting', icon: Flame, label: 'Jejum' },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 pb-6 bg-[var(--background)] border-t border-[var(--border)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 pb-6 bg-(--background) border-t border-(--border)">
       <div className="flex items-center justify-around h-20 max-w-md mx-auto px-2">
         {navItems.map((item) => {
           const isActive = activeTab === item.id;
@@ -26,7 +26,7 @@ export function BottomNav({ activeTab, setActiveTab }: { activeTab: Tab; setActi
               onClick={() => setActiveTab(item.id as Tab)}
               className={`flex flex-col items-center justify-center gap-1 py-2 px-3 rounded-xl
                 transition-all duration-200 ease-out
-                hover:bg-[var(--card-hover)] active:scale-95
+                hover:bg-(--card-hover) active:scale-95
                 ${isActive ? '' : ''}`}
             >
               <div className={`transition-transform duration-200 ${isActive ? 'scale-110' : 'hover:scale-110'}`}>

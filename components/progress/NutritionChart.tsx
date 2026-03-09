@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { Flame, Droplet, Beef } from 'lucide-react';
 
 interface NutritionChartProps {
     carbs: number;
@@ -20,7 +21,6 @@ export function NutritionChart({ carbs, protein, fat }: NutritionChartProps) {
     const targetFat = Math.round((fat / safeTotal) * 100);
 
     useEffect(() => {
-        // Animate values on mount
         const timer = setTimeout(() => {
             setAnimatedValues({
                 protein: targetProtein,
@@ -31,151 +31,142 @@ export function NutritionChart({ carbs, protein, fat }: NutritionChartProps) {
         return () => clearTimeout(timer);
     }, [targetCarbs, targetProtein, targetFat]);
 
+    // Helpers SVG para os anéis do Activity Chart
+    const ringConfig = {
+        protein: { color: 'text-red-500', bg: 'text-red-500/10', r: 70, stroke: 12 },
+        carbs: { color: 'text-orange-500', bg: 'text-orange-500/10', r: 54, stroke: 12 },
+        fat: { color: 'text-yellow-400', bg: 'text-yellow-400/10', r: 38, stroke: 12 },
+    };
+
+    const getCircumference = (r: number) => 2 * Math.PI * r;
+
     return (
-        <div
-            className="card-hover rounded-2xl p-6 animate-fade-in relative overflow-hidden bg-[var(--card)] shadow-sm"
-            style={{
-                animationDelay: '200ms'
-            }}
-        >
-            <div className="flex justify-between items-center mb-8">
-                <h3 className="text-lg font-semibold text-[var(--foreground)]">Nutrição</h3>
-                <span className="text-xs font-medium bg-[var(--background)] text-[var(--muted)] px-2 py-1 rounded-md border border-[var(--border)]">Hoje</span>
+        <div className="rounded-3xl p-6 relative overflow-hidden bg-(--card) shadow-xl border border-(--border)">
+            {/* Soft Ambient Spark */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-orange-500/5 rounded-full blur-[80px] pointer-events-none" />
+
+            <div className="flex justify-between items-center mb-6 z-10 relative">
+                <h3 className="text-lg font-bold text-(--foreground) tracking-tight">Energia & Macros</h3>
+                <span className="text-xs font-bold bg-orange-500/10 text-orange-500 px-3 py-1 rounded-full border border-orange-500/20 shadow-sm">
+                    Hoje
+                </span>
             </div>
 
-            <div className="flex flex-col-reverse md:flex-row items-center gap-8 md:gap-12">
-                {/* Stacked Bar Visualization */}
-                <div className="flex-1 w-full flex flex-col gap-6">
-                    <div className="space-y-5">
-                        {/* Protein */}
-                        <div className="group">
-                            <div className="flex justify-between text-base mb-2">
-                                <span className="text-[var(--muted)] flex items-center gap-2 group-hover:text-red-400 transition-colors">
-                                    <span className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"></span>
-                                    Proteínas
-                                </span>
-                                <span className="text-[var(--foreground)] font-bold">{targetProtein}%</span>
-                            </div>
-                            <div className="h-2.5 w-full bg-[var(--border)] rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-red-500 rounded-full shadow-[0_0_10px_rgba(239,68,68,0.3)] relative overflow-hidden transition-all duration-[1200ms] cubic-bezier(0.34, 1.56, 0.64, 1)"
-                                    style={{ width: `${animatedValues.protein}%` }}
-                                >
-                                    <div className="absolute inset-0 bg-white/10 skew-x-12 -translate-x-full animate-shimmer-fast" />
-                                </div>
-                            </div>
-                        </div>
+            <div className="flex flex-col md:flex-row items-center gap-8 md:gap-4 justify-between relative z-10 w-full">
 
-                        {/* Carbs */}
-                        <div className="group">
-                            <div className="flex justify-between text-base mb-2">
-                                <span className="text-[var(--muted)] flex items-center gap-2 group-hover:text-green-400 transition-colors">
-                                    <span className="w-2.5 h-2.5 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]"></span>
-                                    Carboidratos
-                                </span>
-                                <span className="text-[var(--foreground)] font-bold">{targetCarbs}%</span>
-                            </div>
-                            <div className="h-2.5 w-full bg-[var(--border)] rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-orange-500 rounded-full shadow-[0_0_10px_rgba(249,115,22,0.3)] relative overflow-hidden transition-all duration-[1200ms] cubic-bezier(0.34, 1.56, 0.64, 1)"
-                                    style={{ width: `${animatedValues.carbs}%`, transitionDelay: '100ms' }}
-                                >
-                                    <div className="absolute inset-0 bg-white/10 skew-x-12 -translate-x-full animate-shimmer-fast" />
-                                </div>
-                            </div>
-                        </div>
+                {/* 1. Área do Gráfico de Anéis Circulares (Concentric Rings) */}
+                <div className="relative w-[180px] h-[180px] flex-shrink-0 animate-scale-in" style={{ animationDelay: '100ms' }}>
+                    <svg className="w-full h-full transform -rotate-90 drop-shadow-[0_10px_10px_rgba(0,0,0,0.2)]" viewBox="0 0 160 160">
+                        {/* Fundos dos Anéis */}
+                        <circle cx="80" cy="80" r={ringConfig.protein.r} fill="none" stroke="currentColor" strokeWidth={ringConfig.protein.stroke} className={ringConfig.protein.bg} />
+                        <circle cx="80" cy="80" r={ringConfig.carbs.r} fill="none" stroke="currentColor" strokeWidth={ringConfig.carbs.stroke} className={ringConfig.carbs.bg} />
+                        <circle cx="80" cy="80" r={ringConfig.fat.r} fill="none" stroke="currentColor" strokeWidth={ringConfig.fat.stroke} className={ringConfig.fat.bg} />
 
-                        {/* Fats */}
-                        <div className="group">
-                            <div className="flex justify-between text-base mb-2">
-                                <span className="text-[var(--muted)] flex items-center gap-2 group-hover:text-orange-400 transition-colors">
-                                    <span className="w-2.5 h-2.5 rounded-full bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.5)]"></span>
-                                    Gorduras
-                                </span>
-                                <span className="text-[var(--foreground)] font-bold">{targetFat}%</span>
-                            </div>
-                            <div className="h-2.5 w-full bg-[var(--border)] rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-orange-400 rounded-full shadow-[0_0_10px_rgba(251,146,60,0.3)] relative overflow-hidden transition-all duration-[1200ms] cubic-bezier(0.34, 1.56, 0.64, 1)"
-                                    style={{ width: `${animatedValues.fat}%`, transitionDelay: '200ms' }}
-                                >
-                                    <div className="absolute inset-0 bg-white/10 skew-x-12 -translate-x-full animate-shimmer-fast" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Circular Representation with animation - Larger */}
-                <div className="relative w-40 h-40 flex-shrink-0 animate-scale-in" style={{ animationDelay: '400ms' }}>
-                    <svg className="w-full h-full transform -rotate-90 drop-shadow-xl" viewBox="0 0 36 36">
-                        <path
-                            className="text-[var(--border)]"
-                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                        />
-                        {/* Protein Segment */}
+                        {/* Anel Proteína */}
                         <circle
-                            className="text-red-500 transition-all duration-[1500ms] ease-out"
-                            strokeDasharray={`${animatedValues.protein}, 100`}
-                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="4.5"
-                            strokeLinecap="round"
+                            cx="80" cy="80" r={ringConfig.protein.r}
+                            fill="none" stroke="currentColor" strokeWidth={ringConfig.protein.stroke} strokeLinecap="round"
+                            className={ringConfig.protein.color + " transition-all duration-[1500ms] ease-out drop-shadow-lg"}
+                            strokeDasharray={`${getCircumference(ringConfig.protein.r)}`}
+                            strokeDashoffset={`${getCircumference(ringConfig.protein.r) - (animatedValues.protein / 100) * getCircumference(ringConfig.protein.r)}`}
                         />
-                        {/* Carbs Segment (offset) */}
+                        {/* Anel Carbo */}
                         <circle
-                            className="text-orange-500 transition-all duration-[1500ms] ease-out"
-                            strokeDasharray={`${animatedValues.carbs}, 100`}
-                            strokeDashoffset={-animatedValues.protein}
-                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="4.5"
-                            strokeLinecap="round"
+                            cx="80" cy="80" r={ringConfig.carbs.r}
+                            fill="none" stroke="currentColor" strokeWidth={ringConfig.carbs.stroke} strokeLinecap="round"
+                            className={ringConfig.carbs.color + " transition-all duration-[1500ms] ease-out drop-shadow-lg"}
+                            strokeDasharray={`${getCircumference(ringConfig.carbs.r)}`}
+                            strokeDashoffset={`${getCircumference(ringConfig.carbs.r) - (animatedValues.carbs / 100) * getCircumference(ringConfig.carbs.r)}`}
                             style={{ transitionDelay: '100ms' }}
                         />
-                        {/* Fat Segment (offset) */}
+                        {/* Anel Gordura */}
                         <circle
-                            className="text-orange-400 transition-all duration-[1500ms] ease-out"
-                            strokeDasharray={`${animatedValues.fat}, 100`}
-                            strokeDashoffset={-(animatedValues.protein + animatedValues.carbs)}
-                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="4.5"
-                            strokeLinecap="round"
+                            cx="80" cy="80" r={ringConfig.fat.r}
+                            fill="none" stroke="currentColor" strokeWidth={ringConfig.fat.stroke} strokeLinecap="round"
+                            className={ringConfig.fat.color + " transition-all duration-[1500ms] ease-out drop-shadow-lg"}
+                            strokeDasharray={`${getCircumference(ringConfig.fat.r)}`}
+                            strokeDashoffset={`${getCircumference(ringConfig.fat.r) - (animatedValues.fat / 100) * getCircumference(ringConfig.fat.r)}`}
                             style={{ transitionDelay: '200ms' }}
                         />
                     </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center animate-fade-in" style={{ animationDelay: '800ms' }}>
-                        <span className="text-xs text-[var(--muted)] font-medium uppercase tracking-wider">Macros</span>
-                        <span className="text-xl font-black text-[var(--foreground)]">HOJE</span>
+
+                    {/* Fogo Central */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none animate-pulse-slow">
+                        <Flame size={28} className="text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.8)]" />
                     </div>
+                </div>
+
+                {/* 2. Legenda Animada e Detalhada à Direita */}
+                <div className="flex-1 w-full space-y-4 pt-2">
+
+                    {/* Proteína */}
+                    <div className="bg-(--background) rounded-xl p-3 border border-(--border) flex items-center justify-between shadow-sm group hover:border-red-500/30 transition-colors">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center group-hover:bg-red-500/20 transition-colors">
+                                <Beef size={16} className="text-red-500" />
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold text-(--muted) uppercase">Proteína</p>
+                                <p className="text-sm font-black text-(--foreground)">{protein}g</p>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <span className="text-lg font-black text-red-500 drop-shadow-sm">{animatedValues.protein}%</span>
+                        </div>
+                    </div>
+
+                    {/* Carboidratos */}
+                    <div className="bg-(--background) rounded-xl p-3 border border-(--border) flex items-center justify-between shadow-sm group hover:border-orange-500/30 transition-colors">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center group-hover:bg-orange-500/20 transition-colors">
+                                <Flame size={16} className="text-orange-500" />
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold text-(--muted) uppercase">Carboidratos</p>
+                                <p className="text-sm font-black text-(--foreground)">{carbs}g</p>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <span className="text-lg font-black text-orange-500 drop-shadow-sm">{animatedValues.carbs}%</span>
+                        </div>
+                    </div>
+
+                    {/* Gorduras */}
+                    <div className="bg-(--background) rounded-xl p-3 border border-(--border) flex items-center justify-between shadow-sm group hover:border-yellow-400/30 transition-colors">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-yellow-400/10 flex items-center justify-center group-hover:bg-yellow-400/20 transition-colors">
+                                <Droplet size={16} className="text-yellow-400" />
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold text-(--muted) uppercase">Gorduras</p>
+                                <p className="text-sm font-black text-(--foreground)">{fat}g</p>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <span className="text-lg font-black text-yellow-500 drop-shadow-sm">{animatedValues.fat}%</span>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
             <style jsx global>{`
-        @keyframes shimmer-fast {
-          0% { transform: translateX(-150%) skewX(-12deg); }
-          100% { transform: translateX(200%) skewX(-12deg); }
-        }
-        .animate-shimmer-fast {
-          animation: shimmer 2s infinite linear;
-          animation-duration: 1.5s;
-        }
-        @keyframes scale-in {
-          0% { transform: scale(0.8); opacity: 0; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        .animate-scale-in {
-          animation: scale-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-          opacity: 0;
-        }
-      `}</style>
+                @keyframes scale-in {
+                    0% { transform: scale(0.8) rotate(-10deg); opacity: 0; }
+                    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+                }
+                .animate-scale-in {
+                    animation: scale-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+                    opacity: 0;
+                }
+                @keyframes pulse-slow {
+                    0%, 100% { transform: scale(1); opacity: 1; }
+                    50% { transform: scale(1.1); opacity: 0.8; }
+                }
+                .animate-pulse-slow {
+                    animation: pulse-slow 3s ease-in-out infinite;
+                }
+            `}</style>
         </div>
     );
 }

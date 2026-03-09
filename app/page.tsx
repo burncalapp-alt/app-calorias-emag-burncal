@@ -16,7 +16,7 @@ import { BMICard } from '@/components/progress/BMICard';
 import { NutritionChart } from '@/components/progress/NutritionChart';
 import { CalorieChart } from '@/components/progress/CalorieChart';
 import { WeightGoalChart } from '@/components/progress/WeightGoalChart';
-import { BurnTab } from '@/components/burn/BurnTab';
+import { FastingTab } from '@/components/fasting/FastingTab';
 import { NutritionTab } from '@/components/nutrition/NutritionTab';
 import { Calendar, ChevronDown, Check, Flame, User, ScanLine } from 'lucide-react';
 import { FullScreenCalendar } from '@/components/ui/FullScreenCalendar';
@@ -24,7 +24,7 @@ import { useUserContext } from '@/contexts/UserContext';
 import { supabase } from '@/lib/supabaseClient';
 import { cn, formatDateForDB } from '@/lib/utils';
 
-type Tab = 'diary' | 'progress' | 'scan' | 'burn' | 'nutrition' | 'profile';
+type Tab = 'diary' | 'progress' | 'scan' | 'fasting' | 'nutrition' | 'profile';
 type StatsRange = 'week' | 'month' | 'year';
 
 export default function Home() {
@@ -229,13 +229,13 @@ export default function Home() {
             {/* Logo Header */}
             <div className="relative flex items-center justify-center gap-2 pt-2 pb-2">
               <Flame className="text-orange-500 fill-orange-500" size={28} />
-              <span className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
+              <span className="text-2xl font-bold bg-linear-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
                 BurnCal
               </span>
 
               <button
                 onClick={() => setActiveTab('profile')}
-                className="absolute right-0 p-2 text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                className="absolute right-0 p-2 text-(--muted) hover:text-(--foreground) transition-colors"
               >
                 <User size={24} />
               </button>
@@ -247,7 +247,7 @@ export default function Home() {
             />
 
             <div
-              className="rounded-3xl p-5 animate-fade-in bg-[var(--card)] shadow-lg border border-[var(--border)]"
+              className="rounded-3xl p-5 animate-fade-in bg-(--card) shadow-lg border border-(--border)"
             >
               <CalorieRing
                 remaining={Math.max(0, goals.dailyCalories - consumedCalories)}
@@ -276,9 +276,9 @@ export default function Home() {
             {/* Floating Action Button for Scan */}
             <button
               onClick={() => setIsScanOpen(true)}
-              className="fixed bottom-28 right-4 w-16 h-16 rounded-full bg-[var(--foreground)] dark:bg-[#1c1c1e] border-2 border-[var(--background)] dark:border-white/20 flex items-center justify-center shadow-xl transition-all duration-300 hover:scale-110 hover:border-orange-500/50 hover:shadow-orange-500/20 active:scale-95 z-50 group"
+              className="fixed bottom-28 right-4 w-16 h-16 rounded-full bg-(--foreground) dark:bg-[#1c1c1e] border-2 border-(--background) dark:border-white/20 flex items-center justify-center shadow-xl transition-all duration-300 hover:scale-110 hover:border-orange-500/50 hover:shadow-orange-500/20 active:scale-95 z-50 group"
             >
-              <ScanLine size={32} className="text-[var(--background)] dark:text-white group-hover:text-orange-500 transition-colors" />
+              <ScanLine size={32} className="text-(--background) dark:text-white group-hover:text-orange-500 transition-colors" />
             </button>
           </div>
         );
@@ -288,13 +288,13 @@ export default function Home() {
           <div className="space-y-4">
             <div className="flex justify-between items-center animate-fade-in relative z-20">
               <div>
-                <h1 className="text-xl font-bold text-[var(--foreground)]">Estatísticas</h1>
-                <p className="text-sm text-[var(--muted)] mt-1">dez. 8 - dez. 14</p>
+                <h1 className="text-xl font-bold text-(--foreground)">Estatísticas</h1>
+                <p className="text-sm text-(--muted) mt-1">dez. 8 - dez. 14</p>
               </div>
 
               <button
                 onClick={() => setIsCalendarOpen(true)}
-                className="p-3 rounded-xl bg-[var(--card)] text-orange-500 border border-[var(--border)] hover:border-orange-500/50 transition-all active:scale-95 shadow-sm"
+                className="p-3 rounded-xl bg-(--card) text-orange-500 border border-(--border) hover:border-orange-500/50 transition-all active:scale-95 shadow-sm"
               >
                 <Calendar size={20} />
               </button>
@@ -322,8 +322,8 @@ export default function Home() {
           </div>
         );
 
-      case 'burn':
-        return <BurnTab />;
+      case 'fasting':
+        return <FastingTab currentWater={waterIntake} goalWater={goals.water} onWaterAdd={handleWaterAdd} />;
 
       case 'nutrition':
         return <NutritionTab date={selectedDate} />;
@@ -358,7 +358,7 @@ export default function Home() {
   // Main app
   return (
     <main
-      className="min-h-screen pb-24 bg-[var(--background)] transition-colors duration-300"
+      className="min-h-screen pb-24 bg-(--background) transition-colors duration-300"
     >
       <div className="max-w-md mx-auto px-4 py-4">
         {renderContent()}

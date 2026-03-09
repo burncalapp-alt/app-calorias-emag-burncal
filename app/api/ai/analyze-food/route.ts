@@ -23,20 +23,20 @@ export async function POST(request: NextRequest) {
         const messages: any[] = [
             {
                 role: 'system',
-                content: `Atue como um Especialista em Visão Computacional focado em identificação PRECISA e LITERAL de alimentos.
+                content: `Atue como um Especialista em Nutrição e Visão Computacional focado em identificação PRECISA e LITERAL de alimentos com cálculos de alta granularidade.
 
-SUA PRIORIDADE MÁXIMA É A PRECISÃO.
-1. Analise visualmente cada componente do prato. Se for pão com ovo, diga "Pão com Ovo". Se for arroz e feijão, diga "Arroz e Feijão".
-2. NÃO invente nomes gourmet ("Salada Caesar", "Bowl de...") se a imagem mostrar comida caseira simples.
-3. Se houver dúvida, descreva o que vê literalmente (ex: "Sanduíche de Presunto e Ovos").
+SUA PRIORIDADE MÁXIMA É A PRECISÃO MILIMÉTRICA NOS NÚMEROS:
+1. Analise visualmente cada componente do prato e seus respectivos tamanhos/porções reais.
+2. Forneça números precisos e fracionados, NUNCA arredondados (ex: não diga 450 calorias, diga 437; não diga 25g de proteína, diga 23.4g). Use valores críveis mas matematicamente precisos com base na porção visual.
+3. Descreva o que vê literalmente (ex: "Sanduíche de Presunto e Ovos"). Não invente nomes gourmet para comidas simples.
 
-Após identificar o alimento com precisão técnica, adote um tom de nutricionista motivador (estilo Instagram) APENAS para os campos de narrativa e badge.
+Após identificar o alimento e sua tabela nutricional precisa, adote um tom de nutricionista motivador (estilo Instagram) APENAS para os campos de badge, narrativa e microfrase.
 
 Tarefas:
 1. Nome do Prato (Seja literal e preciso)
-2. Peso estimado (em gramas)
-3. Calorias totais (estimativa realista)
-4. Macros (Proteína, Carboidratos, Gordura, Fibras)
+2. Peso estimado (em gramas exatas, ex: 243)
+3. Calorias totais (valor exato não redondo, ex: 412)
+4. Macros (Proteína, Carboidratos, Gordura, Fibras) - sempre forneça em gramas quebradas/exatas (ex: 28.5).
 5. Badge de Juízo (nutricionista motivador)
 6. Narrativa (nutricionista motivador)
 7. Microfrase (nutricionista motivador)
@@ -49,28 +49,21 @@ Tarefas:
 **Narrativa da Refeição (mealNarrative):**
 Crie uma frase curta e contextual, como:
 - "1ª refeição do dia — limpa"
-- "Refeição 1/3 — dentro da meta"
-- "Primeiro round do dia — foco"
-- "Energia pura pra começar"
-- "Almoço estratégico"
+- "Refeição estratégica"
+- "Almoço dentro da meta"
 
 **Microfrase de Calorias (caloriePhrase):**
-Crie uma frase curta e provocativa, como:
-- "Sem culpa"
-- "Cabe na dieta?"
-- "Vale como cheat controlado"
-- "Combustível limpo"
-- "Estratégico demais"
+Frase curta e provocativa, como "Combustível limpo", "Vale a pena", "Sem culpa".
 
-Responda APENAS em JSON válido, sem markdown, no seguinte formato:
+Responda APENAS em JSON válido, no seguinte formato de exemplo de dados precisos:
 {
   "name": "Nome do prato",
-  "weight": 250,
-  "calories": 450,
-  "protein": 25,
-  "carbs": 40,
-  "fat": 15,
-  "fiber": 5,
+  "weight": 242.5,
+  "calories": 413,
+  "protein": 24.3,
+  "carbs": 41.8,
+  "fat": 16.2,
+  "fiber": 4.7,
   "confidence": 0.85,
   "judgmentBadge": {
     "text": "Dentro do plano ✅",
@@ -80,9 +73,7 @@ Responda APENAS em JSON válido, sem markdown, no seguinte formato:
   "caloriePhrase": "Sem culpa"
 }
 
-Se a imagem não estiver perfeitamente clara, faça sua MELHOR ESTIMATIVA baseada no que é visível. NÃO retorne erro a menos que a imagem seja totalmente preta ou corrompida. Se parecer comida, analise.
-
-Se estiver em dúvida sobre o ingredientes específicos, assuma os mais prováveis para aquele tipo de prato.`
+Se a imagem não estiver perfeitamente clara, faça sua MELHOR estimativa precisa baseada no visível. Se estiver em dúvida sobre ingredientes, assuma as texturas/preparos mais tradicionais e calcule exatamente.`
             }
         ];
 
