@@ -56,6 +56,7 @@ export function NutritionTab({ date }: NutritionTabProps) {
     const [error, setError] = useState<string | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<CategoryKey | null>(null);
     const [generatingCategory, setGeneratingCategory] = useState<CategoryKey | null>(null);
+    const [syncingMeals, setSyncingMeals] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         if (user) {
@@ -215,22 +216,27 @@ export function NutritionTab({ date }: NutritionTabProps) {
     };
 
     const toggleMealInCategory = async (category: CategoryKey, mealIndex: number) => {
-        if (!plan || !user) return;
+        const mealKey = `${category}-${mealIndex}`;
+        if (!plan || !user || syncingMeals.has(mealKey)) return;
+
+        // Evita cliques duplos rápidos bloqueando esta refeição específica enquanto processa
+        setSyncingMeals(prev => new Set(prev).add(mealKey));
 
         const currentMeal = plan.meal_categories[category][mealIndex];
         const isNowEaten = !currentMeal.is_eaten;
         const dateStr = formatDateForDB(date);
 
-        // Optimistic Update
-        const updatedCategories = { ...plan.meal_categories };
-        updatedCategories[category] = [...updatedCategories[category]];
-        updatedCategories[category][mealIndex] = {
-            ...currentMeal,
-            is_eaten: isNowEaten
-        };
-
-        const updatedPlan = { ...plan, meal_categories: updatedCategories };
-        setPlan(updatedPlan);
+        // Optimistic Update seguro utilizando a função do prevState
+        setPlan(prevPlan => {
+            if (!prevPlan) return prevPlan;
+            const updatedCategories = { ...prevPlan.meal_categories };
+            updatedCategories[category] = [...updatedCategories[category]];
+            updatedCategories[category][mealIndex] = {
+                ...currentMeal,
+                is_eaten: isNowEaten
+            };
+            return { ...prevPlan, meal_categories: updatedCategories };
+        });
 
         try {
             let logId = currentMeal.log_id;
@@ -254,9 +260,6 @@ export function NutritionTab({ date }: NutritionTabProps) {
 
                 if (insertError) throw insertError;
                 logId = newMeal.id;
-
-                // Update local intent
-                updatedCategories[category][mealIndex].log_id = logId;
             } else if (logId) {
                 // Remove from meals table
                 const { error: deleteError } = await supabase
@@ -266,28 +269,61 @@ export function NutritionTab({ date }: NutritionTabProps) {
 
                 if (deleteError) {
                     console.error("Error removing meal log:", deleteError);
-                    // Continue anyway to maintain UI consistency, or handle revert
                 }
-                updatedCategories[category][mealIndex].log_id = undefined;
+                logId = undefined;
             }
 
             // Sync plan to DB with new logId state
-            const { error } = await supabase
+            // FETCH RECENT STATE FIRST: resolve o bug de um item desmarcar o outro ao salvar o JSON desatualizado
+            const { data: latestPlan, error: fetchError } = await supabase
                 .from('nutrition_plans')
-                .update({ meal_categories: updatedCategories })
+                .select('meal_categories')
+                .eq('user_id', user.id)
+                .eq('date', dateStr)
+                .single();
+
+            if (fetchError) throw fetchError;
+
+            const latestCategories = latestPlan.meal_categories;
+            latestCategories[category][mealIndex].is_eaten = isNowEaten;
+            latestCategories[category][mealIndex].log_id = logId;
+
+            const { error: updateError } = await supabase
+                .from('nutrition_plans')
+                .update({ meal_categories: latestCategories })
                 .eq('user_id', user.id)
                 .eq('date', dateStr);
 
-            if (error) throw error;
+            if (updateError) {
+                // Rollback em food_logs caso não consiga atualizar NutritionPlans (mantém tabelas em sync)
+                if (isNowEaten && logId) {
+                    await supabase.from('food_logs').delete().eq('id', logId);
+                }
+                throw updateError;
+            }
 
-            // Final consistency check (optional, but good)
-            setPlan({ ...plan, meal_categories: updatedCategories });
+            // Final consistency check
+            setPlan(prevPlan => prevPlan ? { ...prevPlan, meal_categories: latestCategories } : null);
 
         } catch (err) {
             console.error("Error updating meal status:", err);
-            // Revert optimistic update
-            setPlan(plan);
+            // Revert optimistic update safely
+            setPlan(prevPlan => {
+                if (!prevPlan) return prevPlan;
+                const updatedCategories = { ...prevPlan.meal_categories };
+                updatedCategories[category] = [...updatedCategories[category]];
+                updatedCategories[category][mealIndex] = {
+                    ...currentMeal, // original meal state with old is_eaten and log_id
+                };
+                return { ...prevPlan, meal_categories: updatedCategories };
+            });
             setError("Erro ao sincronizar refeição. Tente novamente.");
+        } finally {
+            setSyncingMeals(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(mealKey);
+                return newSet;
+            });
         }
     };
 
