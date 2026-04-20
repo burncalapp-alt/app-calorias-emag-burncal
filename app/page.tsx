@@ -185,8 +185,15 @@ export default function Home() {
   const handleMealAdd = async (meal: any) => {
     if (!user) return;
 
+    // Converte possíveis strings para número e arredonda para evitar erro no banco (espera inteiros)
+    const safeCalories = Math.round(Number(meal.calories)) || 0;
+    const safeProtein = Math.round(Number(meal.protein)) || 0;
+    const safeCarbs = Math.round(Number(meal.carbs)) || 0;
+    const safeFat = Math.round(Number(meal.fat)) || 0;
+    const safeWeight = meal.weight ? Number(meal.weight) : null;
+
     // Optimistic Update (partial)
-    setConsumedCalories(prev => prev + meal.calories);
+    setConsumedCalories(prev => prev + safeCalories);
 
     try {
       // Previne que Base64 gigante ou blob temporário quebre a inserção no banco
@@ -198,25 +205,26 @@ export default function Home() {
 
       const { error } = await supabase.from('food_logs').insert({
         user_id: user.id,
-        name: meal.title,
-        calories: meal.calories || 0,
-        protein: meal.protein || 0,
-        carbs: meal.carbs || 0,
-        fat: meal.fat || 0,
-        weight: meal.weight || null,
+        name: String(meal.title || 'Alimento Analisado'),
+        calories: safeCalories,
+        protein: safeProtein,
+        carbs: safeCarbs,
+        fat: safeFat,
+        weight: safeWeight,
         image_url: finalImageUrl,
         date: formatDateForDB(selectedDate), // Use currently selected date
         created_at: new Date().toISOString()
       });
 
       if (error) {
+        console.error("Supabase Insert Error:", error);
         throw error;
       }
       fetchDailyLogs();
     } catch (error: any) {
       console.error("Error adding meal:", error);
       // Revert optimistic update (approximate)
-      setConsumedCalories(prev => Math.max(0, prev - meal.calories));
+      setConsumedCalories(prev => Math.max(0, prev - safeCalories));
     }
   };
 

@@ -13,9 +13,10 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        if (!imageBase64) {
+        // Requer pelo menos imagem OU descrição de texto
+        if (!imageBase64 && !description?.trim()) {
             return NextResponse.json(
-                { error: 'Imagem não recebida pelo servidor. Tente tirar a foto novamente.' },
+                { error: 'Forneça uma imagem ou descrição do alimento.' },
                 { status: 400 }
             );
         }
@@ -94,9 +95,11 @@ Se a imagem não estiver perfeitamente clara, faça sua MELHOR estimativa precis
 
         userContent.push({
             type: 'text',
-            text: description
-                ? `Analise esta imagem de comida.Contexto adicional: ${description}`
-                : 'Analise esta imagem de comida e forneça as informações nutricionais.'
+            text: imageBase64
+                ? (description
+                    ? `Analise esta imagem de comida. Contexto adicional: ${description}`
+                    : 'Analise esta imagem de comida e forneça as informações nutricionais.')
+                : `Analise este alimento descrito pelo usuário e forneça as informações nutricionais estimadas: "${description}"`
         });
 
         messages.push({

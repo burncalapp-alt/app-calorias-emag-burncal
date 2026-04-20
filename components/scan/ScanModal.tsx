@@ -9,7 +9,7 @@ interface ScanModalProps {
     isOpen: boolean;
     onClose: () => void;
     onWaterAdd: (amount: number) => void;
-    onMealAdd?: (meal: any) => void;
+    onMealAdd?: (meal: any) => Promise<void>;
 }
 
 type ScanStep = 'menu' | 'describe' | 'analyzing' | 'result';
@@ -66,124 +66,44 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
     const handleRetake = () => {
         setPreviewUrl(null);
         setDescription('');
+        setImageBlob(null);
         setStep('menu');
     };
 
     const handleAnalyze = async () => {
+        if (!description && !previewUrl) {
+            alert('Por favor, adicione uma foto ou descreva o alimento.');
+            return;
+        }
+
         setStep('analyzing');
 
         try {
-            // Convert image to base64 with resizing
             let imageBase64 = '';
-            if (previewUrl) {
+            if (previewUrl && imageBlob) {
                 try {
-                    // Get the original file from the input element
-                    const fileInput = fileInputRef.current;
-                    const file = fileInput?.files?.[0];
-
-                    if (file) {
-                        // Store the file blob for Supabase upload
-                        setImageBlob(file);
-
-                        // Use FileReader for reliable base64 conversion
-                        imageBase64 = await new Promise<string>((resolve, reject) => {
-                            const reader = new FileReader();
-                            reader.onload = () => {
-                                const result = reader.result as string;
-                                // Remove data URL prefix to get pure base64
-                                const base64 = result.split(',')[1];
-                                console.log('Image converted, base64 length:', base64?.length || 0);
-                                resolve(base64 || '');
-                            };
-                            reader.onerror = () => reject(new Error('FileReader failed'));
-                            reader.readAsDataURL(file);
-                        });
-                    }
-
-                    // Fallback: try canvas approach if FileReader didn't work
-                    if (!imageBase64 && previewUrl) {
-                        imageBase64 = await new Promise<string>((resolve, reject) => {
-                            const img = new Image();
-                            img.crossOrigin = 'anonymous';
-
-                            const timer = setTimeout(() => {
-                                reject(new Error("Image load timeout"));
-                            }, 8000);
-
-                            img.onload = () => {
-                                clearTimeout(timer);
-                                try {
-                                    const canvas = document.createElement('canvas');
-                                    const maxDim = 1024;
-                                    let width = img.width;
-                                    let height = img.height;
-
-                                    if (width > maxDim || height > maxDim) {
-                                        if (width > height) {
-                                            height = (height * maxDim) / width;
-                                            width = maxDim;
-                                        } else {
-                                            width = (width * maxDim) / height;
-                                            height = maxDim;
-                                        }
-                                    }
-
-                                    canvas.width = width;
-                                    canvas.height = height;
-                                    const ctx = canvas.getContext('2d');
-                                    ctx?.drawImage(img, 0, 0, width, height);
-
-                                    const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-                                    const base64 = dataUrl.split(',')[1];
-                                    console.log('Canvas fallback, base64 length:', base64?.length || 0);
-                                    resolve(base64 || '');
-                                } catch (err) {
-                                    reject(err);
-                                }
-                            };
-
-                            img.onerror = () => {
-                                clearTimeout(timer);
-                                reject(new Error("Image load failed"));
-                            };
-
-                            img.src = previewUrl;
-                        });
-                    }
+                    imageBase64 = await new Promise<string>((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            const result = reader.result as string;
+                            resolve(result.split(',')[1] || '');
+                        };
+                        reader.onerror = () => reject(new Error('FileReader failed'));
+                        reader.readAsDataURL(imageBlob);
+                    });
                 } catch (imgError) {
                     console.error("Image processing failed:", imgError);
                 }
             }
 
-            // Validate image before sending
-            if (!imageBase64) {
-                console.error('No image base64 data available');
-                setScannedFood({
-                    title: 'ERRO: Falha ao processar imagem. Tente novamente.',
-                    calories: 0,
-                    weight: 100,
-                    protein: 0,
-                    carbs: 0,
-                    fat: 0,
-                    fiber: 0,
-                    sodium: 0,
-                    image: previewUrl
-                });
-                setStep('result');
-                return;
-            }
-
-            console.log('Sending to API, imageBase64 length:', imageBase64.length);
-
-            // Create an abort controller for the fetch timeout
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 45000); // 45s timeout
+            const timeoutId = setTimeout(() => controller.abort(), 45000);
 
             const apiResponse = await fetch('/api/ai/analyze-food', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    imageBase64,
+                    imageBase64: imageBase64 || null,
                     description
                 }),
                 signal: controller.signal
@@ -193,19 +113,7 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
             const data = await apiResponse.json();
 
             if (data.error) {
-                console.error('AI Error:', data.error);
-                // Fallback to manual entry if AI fails
-                setScannedFood({
-                    title: `ERRO: ${data.error}${data.details ? ' - ' + JSON.stringify(data.details).substring(0, 50) : ''}`,
-                    calories: 0,
-                    weight: 100,
-                    protein: 0,
-                    carbs: 0,
-                    fat: 0,
-                    fiber: 0,
-                    sodium: 0,
-                    image: previewUrl
-                });
+                throw new Error(data.error);
             } else {
                 setScannedFood({
                     title: data.name || description || 'Alimento',
@@ -226,30 +134,19 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
             setStep('result');
         } catch (error) {
             console.error('Error analyzing food:', error);
-            // Fallback on error
-            setScannedFood({
-                title: description || 'Erro na análise',
-                calories: 0,
-                weight: 100,
-                protein: 0,
-                carbs: 0,
-                fat: 0,
-                fiber: 0,
-                sodium: 0,
-                image: previewUrl
-            });
-            setStep('result');
+            alert('Erro ao analisar alimento. Tente novamente ou insira manualmente.');
+            setStep('describe');
         }
     };
 
     const handleConfirmMeal = async () => {
         if (!onMealAdd || !scannedFood) return;
 
+        setUploading(true);
         let finalImageUrl = scannedFood.image;
 
-        if (imageBlob && user) {
-            setUploading(true);
-            try {
+        try {
+            if (imageBlob && user) {
                 const filename = `${user.id}/${Date.now()}.jpg`;
                 const { data, error } = await supabase.storage
                     .from('meal_photos')
@@ -258,31 +155,25 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                         upsert: true
                     });
 
-                if (error) {
-                    console.error('Upload error:', error);
-                    if (error.message.includes('Bucket not found')) {
-                        alert('ERRO DE CONFIGURAÇÃO: O bucket de armazenamento "meal_photos" não foi encontrado no Supabase.\n\nPor favor, execute o script "create_burn_tables.sql" no Editor SQL do Supabase para corrigir isso.');
-                    }
-                    // Continue with local URL as fallback
-                } else if (data) {
+                if (!error && data) {
                     const { data: publicUrlData } = supabase.storage
                         .from('meal_photos')
                         .getPublicUrl(filename);
-
                     finalImageUrl = publicUrlData.publicUrl;
                 }
-            } catch (err) {
-                console.error('Upload exception:', err);
-            } finally {
-                setUploading(false);
             }
-        }
 
-        onMealAdd({
-            ...scannedFood,
-            image: finalImageUrl
-        });
-        onClose();
+            await onMealAdd({
+                ...scannedFood,
+                image: finalImageUrl
+            });
+            onClose();
+        } catch (err) {
+            console.error('Meal save error:', err);
+            alert('Erro ao salvar refeição. Tente novamente.');
+        } finally {
+            setUploading(false);
+        }
     };
 
     // Helper function for badge color styles
@@ -302,7 +193,7 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
     // Full Screen Modal for describe/analyzing/result
     if (step !== 'menu') {
         return (
-            <div className="fixed inset-0 z-[60] bg-[var(--background)] flex flex-col animate-in fade-in duration-200">
+            <div className="fixed inset-0 z-60 bg-(--background) flex flex-col animate-in fade-in duration-200">
                 {/* Header with Logo and Close Button */}
                 <div className="p-4 flex items-center justify-between">
                     <button
@@ -326,7 +217,7 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                     {step === 'describe' && (
                         <div className="w-full max-w-md space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
                             {previewUrl && (
-                                <div className="w-full h-40 rounded-2xl overflow-hidden shadow-md border border-[var(--border)]">
+                                <div className="w-full h-40 rounded-2xl overflow-hidden shadow-md border border-(--border)">
                                     <img
                                         src={previewUrl}
                                         className="w-full h-full object-cover"
@@ -334,7 +225,7 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                                     />
                                 </div>
                             )}
-                            <h2 className="text-lg font-semibold text-[var(--foreground)]">Descrição do prato</h2>
+                            <h2 className="text-lg font-semibold text-(--foreground)">Descrição do prato</h2>
 
                             <div className="relative">
                                 <textarea
@@ -342,7 +233,7 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                                     onChange={(e) => setDescription(e.target.value)}
 
                                     placeholder="Peso, composição e método de preparo ajudarão a determinar o valor nutricional..."
-                                    className="w-full h-24 p-4 pr-12 bg-transparent border-2 border-orange-500/50 rounded-xl text-[var(--foreground)] placeholder-[var(--muted)] resize-none focus:outline-none focus:border-orange-500 transition-colors"
+                                    className="w-full h-24 p-4 pr-12 bg-transparent border-2 border-orange-500/50 rounded-xl text-(--foreground) placeholder-(--muted) resize-none focus:outline-none focus:border-orange-500 transition-colors"
                                 />
                                 <button
                                     onClick={() => {
@@ -401,7 +292,7 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                             <div className="flex gap-3">
                                 <button
                                     onClick={handleRetake}
-                                    className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-[var(--card)] text-[var(--foreground)] border font-medium hover:bg-[var(--card-hover)] transition-all active:scale-95"
+                                    className="flex-1 flex items-center justify-center gap-2 py-4 rounded-xl bg-(--card) text-(--foreground) border font-medium hover:bg-(--card-hover) transition-all active:scale-95"
                                 >
                                     <RefreshCcw size={18} />
                                     Tirar novamente
@@ -432,7 +323,7 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                                         />
                                     )}
                                     {/* Scanning Line Animation */}
-                                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-orange-500/50 to-transparent animate-[scan_2s_ease-in-out_infinite]" />
+                                    <div className="absolute inset-0 bg-linear-to-b from-transparent via-orange-500/50 to-transparent animate-[scan_2s_ease-in-out_infinite]" />
                                 </div>
 
                                 {/* Orbiting rings */}
@@ -447,10 +338,10 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                             </div>
 
                             <div className="text-center space-y-3 max-w-xs mx-auto">
-                                <h3 className="text-xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent animate-pulse">
+                                <h3 className="text-xl font-bold bg-linear-to-r from-orange-500 to-red-600 bg-clip-text text-transparent animate-pulse">
                                     Analisando sua refeição...
                                 </h3>
-                                <p className="text-sm text-[var(--muted)]">
+                                <p className="text-sm text-(--muted)">
                                     Nossa IA está identificando ingredientes e calculando macros.
                                 </p>
                             </div>
@@ -470,7 +361,7 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                                     />
                                 )}
                                 {/* Gradient Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
 
                                 {/* Floating Badge on Image */}
                                 {scannedFood.judgmentBadge && (
@@ -496,16 +387,16 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                             </div>
 
                             {/* Compact Info Card */}
-                            <div className="bg-[var(--card)] rounded-2xl p-3 border border-[var(--border)] shadow-lg">
+                            <div className="bg-(--card) rounded-2xl p-3 border border-(--border) shadow-lg">
                                 {/* Calories & Weight Row */}
                                 <div className="flex items-center justify-between mb-3">
                                     <div>
-                                        <p className="text-sm text-[var(--muted)] uppercase tracking-wider font-semibold">Calorias</p>
+                                        <p className="text-sm text-(--muted) uppercase tracking-wider font-semibold">Calorias</p>
                                         <p className="text-4xl font-black text-orange-500">{scannedFood.calories}</p>
                                     </div>
                                     <div className="text-left">
-                                        <p className="text-sm text-[var(--muted)] uppercase tracking-wider font-semibold">Porção</p>
-                                        <p className="text-2xl font-bold text-[var(--foreground)]">{scannedFood.weight}g</p>
+                                        <p className="text-sm text-(--muted) uppercase tracking-wider font-semibold">Porção</p>
+                                        <p className="text-2xl font-bold text-(--foreground)">{scannedFood.weight}g</p>
                                     </div>
                                     {scannedFood.confidence && (
                                         <div className="px-2 py-1 rounded-full bg-green-500/20 border border-green-500/30 text-green-600 text-xs font-bold flex items-center gap-1">
@@ -517,33 +408,33 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
 
                                 {/* Macros Grid - 2x2 Layout */}
                                 <div className="grid grid-cols-2 gap-2">
-                                    <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3 flex flex-col items-center gap-1.5">
+                                    <div className="bg-(--card) border border-(--border) rounded-2xl p-3 flex flex-col items-center gap-1.5">
                                         <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
                                             <Beef size={24} className="text-red-500" />
                                         </div>
-                                        <p className="text-xs text-[var(--muted)]">Proteínas</p>
-                                        <p className="font-black text-[var(--foreground)] text-lg">{scannedFood.protein} g</p>
+                                        <p className="text-xs text-(--muted)">Proteínas</p>
+                                        <p className="font-black text-(--foreground) text-lg">{scannedFood.protein} g</p>
                                     </div>
-                                    <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3 flex flex-col items-center gap-1.5">
+                                    <div className="bg-(--card) border border-(--border) rounded-2xl p-3 flex flex-col items-center gap-1.5">
                                         <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
                                             <Wheat size={24} className="text-green-500" />
                                         </div>
-                                        <p className="text-xs text-[var(--muted)]">Carboidratos</p>
-                                        <p className="font-black text-[var(--foreground)] text-lg">{scannedFood.carbs} g</p>
+                                        <p className="text-xs text-(--muted)">Carboidratos</p>
+                                        <p className="font-black text-(--foreground) text-lg">{scannedFood.carbs} g</p>
                                     </div>
-                                    <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3 flex flex-col items-center gap-1.5">
+                                    <div className="bg-(--card) border border-(--border) rounded-2xl p-3 flex flex-col items-center gap-1.5">
                                         <div className="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center">
                                             <Flame size={24} className="text-yellow-500" />
                                         </div>
-                                        <p className="text-xs text-[var(--muted)]">Gorduras</p>
-                                        <p className="font-black text-[var(--foreground)] text-lg">{scannedFood.fat} g</p>
+                                        <p className="text-xs text-(--muted)">Gorduras</p>
+                                        <p className="font-black text-(--foreground) text-lg">{scannedFood.fat} g</p>
                                     </div>
-                                    <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-3 flex flex-col items-center gap-1.5">
+                                    <div className="bg-(--card) border border-(--border) rounded-2xl p-3 flex flex-col items-center gap-1.5">
                                         <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center">
                                             <Wheat size={24} className="text-emerald-500" />
                                         </div>
-                                        <p className="text-xs text-[var(--muted)]">Fibras</p>
-                                        <p className="font-black text-[var(--foreground)] text-lg">{scannedFood.fiber} g</p>
+                                        <p className="text-xs text-(--muted)">Fibras</p>
+                                        <p className="font-black text-(--foreground) text-lg">{scannedFood.fiber} g</p>
                                     </div>
                                 </div>
                             </div>
@@ -553,10 +444,10 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
 
                 {/* Bottom Action - Sticky */}
                 {step === 'result' && (
-                    <div className="p-4 pb-8 bg-[var(--background)]">
+                    <div className="p-4 pb-8 bg-(--background)">
                         <button
                             onClick={handleConfirmMeal}
-                            className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all active:scale-[0.98] shadow-xl shadow-orange-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-linear-to-r from-orange-500 to-orange-600 text-white font-bold text-lg hover:from-orange-600 hover:to-orange-700 transition-all active:scale-[0.98] shadow-xl shadow-orange-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={uploading}
                         >
                             {uploading ? (
@@ -579,7 +470,7 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
 
     // MENU STEP (Bottom Sheet)
     return (
-        <div className="fixed inset-0 z-[60]">
+        <div className="fixed inset-0 z-60">
             <div
                 className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in"
                 onClick={onClose}
@@ -594,47 +485,47 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
             />
 
             <div
-                className="absolute bottom-0 left-0 right-0 rounded-t-3xl p-6 pb-10 animate-slide-up bg-[var(--card)] border-t border-[var(--border)]"
+                className="absolute bottom-0 left-0 right-0 rounded-t-3xl p-6 pb-10 animate-slide-up bg-(--card) border-t border-(--border)"
             >
                 <div className="w-10 h-1 rounded-full bg-gray-600 mx-auto mb-6" />
 
                 <div className="space-y-2 mb-6">
                     <button
                         onClick={handleCameraClick}
-                        className="w-full flex items-center gap-4 p-4 rounded-xl bg-[var(--card-hover)] hover:opacity-80 transition-all active:scale-98 animate-fade-in border border-[var(--border)]"
+                        className="w-full flex items-center gap-4 p-4 rounded-xl bg-(--card-hover) hover:opacity-80 transition-all active:scale-98 animate-fade-in border border-(--border)"
                         style={{ animationDelay: '100ms' }}
                     >
                         <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
                             <Camera size={20} className="text-blue-500" />
                         </div>
-                        <span className="text-[var(--foreground)] font-medium">Escanear comida</span>
+                        <span className="text-(--foreground) font-medium">Escanear comida</span>
                     </button>
 
                     <button
                         onClick={handleLibraryClick}
-                        className="w-full flex items-center gap-4 p-4 rounded-xl bg-[var(--card-hover)] hover:opacity-80 transition-all active:scale-98 animate-fade-in border border-[var(--border)]"
+                        className="w-full flex items-center gap-4 p-4 rounded-xl bg-(--card-hover) hover:opacity-80 transition-all active:scale-98 animate-fade-in border border-(--border)"
                         style={{ animationDelay: '200ms' }}
                     >
                         <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center">
                             <ImageIcon size={20} className="text-purple-500" />
                         </div>
-                        <span className="text-[var(--foreground)] font-medium">Escolher da biblioteca</span>
+                        <span className="text-(--foreground) font-medium">Escolher da biblioteca</span>
                     </button>
 
                     <button
                         onClick={() => setStep('describe')}
-                        className="w-full flex items-center gap-4 p-4 rounded-xl bg-[var(--card-hover)] hover:opacity-80 transition-all active:scale-98 animate-fade-in border border-[var(--border)]"
+                        className="w-full flex items-center gap-4 p-4 rounded-xl bg-(--card-hover) hover:opacity-80 transition-all active:scale-98 animate-fade-in border border-(--border)"
                         style={{ animationDelay: '300ms' }}
                     >
                         <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
                             <PenLine size={20} className="text-orange-500" />
                         </div>
-                        <span className="text-[var(--foreground)] font-medium">Descrever comida</span>
+                        <span className="text-(--foreground) font-medium">Descrever comida</span>
                     </button>
                 </div>
 
                 <div className="mt-4 animate-fade-in" style={{ animationDelay: '400ms' }}>
-                    <h4 className="text-sm text-[var(--muted)] mb-3">Ingestão de água</h4>
+                    <h4 className="text-sm text-(--muted) mb-3">Ingestão de água</h4>
                     <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                         {waterOptions.map((amount) => (
                             <button
@@ -643,7 +534,7 @@ export function ScanModal({ isOpen, onClose, onWaterAdd, onMealAdd }: ScanModalP
                                     onWaterAdd(amount);
                                     onClose();
                                 }}
-                                className="flex-shrink-0 flex items-center gap-2 px-4 py-3 rounded-xl bg-sky-500/10 border border-sky-500/20 hover:scale-105 active:scale-95 transition-all"
+                                className="shrink-0 flex items-center gap-2 px-4 py-3 rounded-xl bg-sky-500/10 border border-sky-500/20 hover:scale-105 active:scale-95 transition-all"
                             >
                                 <Droplet size={18} className="text-sky-400" fill="currentColor" />
                                 <span className="text-sky-400 font-medium">{amount} ml</span>
