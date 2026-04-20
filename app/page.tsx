@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { AuthPage } from '@/components/auth/AuthPage';
 import { OnboardingQuiz } from '@/components/onboarding/OnboardingQuiz';
 import { Loader2 } from 'lucide-react';
+import { SubscriptionLock } from '@/components/auth/SubscriptionLock';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { DateSelector } from '@/components/home/DateSelector';
 import { CalorieRing } from '@/components/home/CalorieRing';
@@ -375,24 +376,26 @@ export default function Home() {
 
   // Main app
   return (
-    <main
-      className="min-h-screen pb-24 bg-(--background) transition-colors duration-300"
-    >
-      <div className="max-w-md mx-auto px-4 py-4">
-        {renderContent()}
-      </div>
+    <SubscriptionLock>
+      <main
+        className="min-h-screen pb-24 bg-(--background) transition-colors duration-300"
+      >
+        <div className="max-w-md mx-auto px-4 py-4">
+          {renderContent()}
+        </div>
 
-      <BottomNav
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
+        <BottomNav
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
 
-      <ScanModal
-        isOpen={isScanOpen}
-        onClose={() => setIsScanOpen(false)}
-        onWaterAdd={handleWaterAdd}
-        onMealAdd={handleMealAdd}
-      />
-    </main>
+        <ScanModal
+          isOpen={isScanOpen}
+          onClose={() => setIsScanOpen(false)}
+          onWaterAdd={handleWaterAdd}
+          onMealAdd={handleMealAdd}
+        />
+      </main>
+    </SubscriptionLock>
   );
 }

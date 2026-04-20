@@ -18,6 +18,7 @@ export interface UserProfile {
     targetWeight: number; // kg
     activityLevel: ActivityLevel;
     goal: Goal;
+    subscription_status: string; // 'active', 'inactive', 'canceled'
 }
 
 export interface CalculatedGoals {
@@ -54,7 +55,8 @@ const DEFAULT_PROFILE: UserProfile = {
     weight: 70,
     targetWeight: 65,
     activityLevel: 'moderate',
-    goal: 'lose_weight'
+    goal: 'lose_weight',
+    subscription_status: 'active' // Default to active for fallback
 };
 
 export function UserProvider({ children }: { children: ReactNode }) {
@@ -109,7 +111,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
                     weight: Number(data.weight) || 70,
                     targetWeight: Number(data.target_weight) || 65,
                     activityLevel: data.activity_level || 'moderate',
-                    goal: data.goal || 'lose_weight'
+                    goal: data.goal || 'lose_weight',
+                    subscription_status: data.subscription_status || 'active' // Default active so you don't get locked out without paying during dev
                 });
                 setOnboardingComplete(data.onboarding_complete ?? false);
             } else {
